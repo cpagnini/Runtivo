@@ -13,6 +13,8 @@ docker compose up -d db                       # oppure un PostgreSQL locale con 
 dotnet run --project backend/src/Runtivo.Api  # API su http://localhost:5044
 cd frontend && npm install && npm run dev     # web su http://localhost:3000
 ```
+In sviluppo l'API applica le migrazioni all'avvio e scrive nel log i link di accesso (nessuna email reale).
+
 Verifica: `http://localhost:5044/health` e `/health/ready`; la home su `http://localhost:3000`.
 
 ## Test

@@ -1,4 +1,5 @@
 using System.Net;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Runtivo.Api.Tests;
@@ -9,7 +10,10 @@ public class HealthTests
 
     private static WebApplicationFactory<Program> CreateFactory(string connectionString) =>
         new WebApplicationFactory<Program>().WithWebHostBuilder(b =>
-            b.UseSetting("ConnectionStrings:Default", connectionString));
+            {
+                b.UseEnvironment("Testing");
+                b.UseSetting("ConnectionStrings:Default", connectionString);
+            });
 
     [Fact]
     public async Task Liveness_responds_without_database()

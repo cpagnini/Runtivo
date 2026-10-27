@@ -19,4 +19,10 @@ Data: 2026-10-27 · Stato: accettata
 - Il profilo non permette ancora di cancellare il passo preferito una volta impostato.
 - La sessione non controlla lo stato dell'account a ogni richiesta (sospensione efficace al login successivo).
 - Export e cancellazione account (P0 del PRD) non ancora presenti.
-- Nessuna pagina frontend per login e club.
+
+## Frontend (milestone 1)
+- Pagine: `/accedi`, `/accedi/verifica`, `/profilo`, `/club`, `/club/nuovo`, `/club/[id]` (con pannello admin: approva, ruoli, rimuovi, inviti), `/club/invito`.
+- Tutte client-side e protette da `useRequireLogin`: senza sessione portano a `/accedi?next=...`. La destinazione è salvata in `localStorage` perché il link email si apre spesso in un'altra scheda; `next` accetta solo percorsi interni.
+- Le chiamate passano da un unico client (`src/lib/api.ts`) che aggiunge l'header CSRF e traduce gli errori in messaggi italiani.
+- Verifica link e accettazione invito partono una sola volta (token monouso), anche con il doppio render di sviluppo.
+- Provato a mano nel browser: login, creazione club, invito, accesso di un secondo utente e iscrizione tramite invito; profilo su larghezza telefono.

@@ -1,0 +1,27 @@
+.main {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem 1rem;
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: clamp(2.5rem, 12vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.tagline {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.lead {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  opacity: 0.8;
+}

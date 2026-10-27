@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: runtivo_test
+          POSTGRES_USER: runtivo
+          POSTGRES_PASSWORD: runtivo_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U runtivo"
+          --health-interval 5s --health-retries 10
+    env:
+      RUNTIVO_TEST_DB: Host=localhost;Port=5432;Database=runtivo_test;Username=runtivo;Password=runtivo_ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet test backend/Runtivo.sln --configuration Release
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build

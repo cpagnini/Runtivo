@@ -120,6 +120,7 @@ export type RunEvent = {
   myRole: Role | null;
   groups: Group[];
   myRsvp: { status: "Going" | "NotGoing"; paceGroupId: string | null } | null;
+  seriesId: string | null;
 };
 
 export type EventSummary = {
@@ -165,4 +166,48 @@ export function formatPaceRange(min: number | null, max: number | null): string 
   if (min != null && max != null) return min === max ? `${formatPace(min)} min/km` : `${formatPace(min)}–${formatPace(max)} min/km`;
   const one = min ?? max;
   return one != null ? `circa ${formatPace(one)} min/km` : "";
+}
+
+export type SeriesSummary = {
+  id: string;
+  title: string;
+  meetingPointLabel: string;
+  weekday: string;
+  localStartTime: string;
+  startDate: string;
+  endDate: string | null;
+  enabled: boolean;
+  visibility: Visibility;
+  groupCount: number;
+  upcomingEvents: number;
+};
+
+export type DashboardEvent = {
+  id: string;
+  title: string;
+  startsAtUtc: string;
+  status: "Scheduled" | "Cancelled";
+  seriesId: string | null;
+  going: number;
+  notGoing: number;
+  groups: { name: string; going: number; capacity: number | null }[];
+};
+
+export type Dashboard = { upcoming: DashboardEvent[]; series: SeriesSummary[] };
+
+export const weekdayLabel: Record<string, string> = {
+  Monday: "Lunedì",
+  Tuesday: "Martedì",
+  Wednesday: "Mercoledì",
+  Thursday: "Giovedì",
+  Friday: "Venerdì",
+  Saturday: "Sabato",
+  Sunday: "Domenica",
+};
+
+/** ISO UTC → valore per <input type="datetime-local"> nel fuso del dispositivo. */
+export function toLocalInput(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }

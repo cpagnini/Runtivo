@@ -205,6 +205,73 @@ namespace Runtivo.Api.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Runtivo.Api.Domain.EventSeries", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClubId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("GroupsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<TimeOnly>("LocalStartTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("MeetingPointLabel")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("TimeZoneId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Visibility")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Weekday")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClubId", "Enabled");
+
+                    b.ToTable("Series");
+                });
+
             modelBuilder.Entity("Runtivo.Api.Domain.LoginToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -310,6 +377,12 @@ namespace Runtivo.Api.Data.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
+                    b.Property<DateOnly?>("OccurrenceLocalDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("SeriesId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset>("StartsAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -336,6 +409,9 @@ namespace Runtivo.Api.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClubId", "StartsAtUtc");
+
+                    b.HasIndex("SeriesId", "OccurrenceLocalDate")
+                        .IsUnique();
 
                     b.ToTable("Events");
                 });
@@ -428,6 +504,15 @@ namespace Runtivo.Api.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Runtivo.Api.Domain.EventSeries", b =>
+                {
+                    b.HasOne("Runtivo.Api.Domain.Club", null)
+                        .WithMany()
+                        .HasForeignKey("ClubId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Runtivo.Api.Domain.PaceGroup", b =>
                 {
                     b.HasOne("Runtivo.Api.Domain.RunEvent", null)
@@ -444,6 +529,11 @@ namespace Runtivo.Api.Data.Migrations
                         .HasForeignKey("ClubId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Runtivo.Api.Domain.EventSeries", null)
+                        .WithMany()
+                        .HasForeignKey("SeriesId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Runtivo.Api.Domain.RunEvent", b =>

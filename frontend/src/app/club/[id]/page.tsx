@@ -166,8 +166,8 @@ function UpcomingEvents({ clubId, isAdmin }: { clubId: string; isAdmin: boolean 
       <div className="row">
         <h2>Prossime uscite</h2>
         {isAdmin && (
-          <Link className="button small" href={`/club/${clubId}/eventi/nuovo`}>
-            Nuova uscita
+          <Link className="button small" href={`/club/${clubId}/gestione`}>
+            Gestione
           </Link>
         )}
       </div>

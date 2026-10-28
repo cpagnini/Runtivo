@@ -17,7 +17,7 @@ public record GroupDto(Guid Id, string Name, int? DistanceMeters, int? PaceMinSe
 public record MyRsvpDto(RsvpStatus Status, Guid? PaceGroupId);
 public record EventDto(Guid Id, Guid ClubId, string ClubName, string Title, string? Description, DateTimeOffset StartsAtUtc,
     string TimeZoneId, string MeetingPointLabel, EventVisibility Visibility, EventStatus Status, ClubRole? MyRole,
-    List<GroupDto> Groups, MyRsvpDto? MyRsvp);
+    List<GroupDto> Groups, MyRsvpDto? MyRsvp, Guid? SeriesId);
 public record EventSummaryDto(Guid Id, string Title, DateTimeOffset StartsAtUtc, string MeetingPointLabel,
     EventVisibility Visibility, EventStatus Status, int GroupCount, int GoingCount);
 public record MyEventDto(Guid EventId, string Title, DateTimeOffset StartsAtUtc, string MeetingPointLabel, EventStatus EventStatus,
@@ -269,7 +269,7 @@ public static class EventEndpoints
         return await db.Memberships.AnyAsync(m => m.ClubId == clubId && m.UserId == userId && m.Status == MembershipStatus.Active, ct);
     }
 
-    private static async Task<IResult?> EnsureClubAdminAsync(RuntivoDbContext db, Guid clubId, Guid userId, CancellationToken ct)
+    internal static async Task<IResult?> EnsureClubAdminAsync(RuntivoDbContext db, Guid clubId, Guid userId, CancellationToken ct)
     {
         if (!await db.Clubs.AnyAsync(c => c.Id == clubId && c.Status == ClubStatus.Active, ct)) return Http.Problem(404, "Club non trovato.");
         var isAdmin = await db.Memberships.AnyAsync(m => m.ClubId == clubId && m.UserId == userId &&
@@ -307,14 +307,14 @@ public static class EventEndpoints
             if (r is not null) mine = new MyRsvpDto(r.Status, r.PaceGroupId);
         }
         return new EventDto(ev.Id, ev.ClubId, access.ClubName, ev.Title, ev.Description, ev.StartsAtUtc, ev.TimeZoneId,
-            ev.MeetingPointLabel, ev.Visibility, ev.Status, access.Role, groupDtos, mine);
+            ev.MeetingPointLabel, ev.Visibility, ev.Status, access.Role, groupDtos, mine, ev.SeriesId);
     }
 
     // ---- validazione e utilità ----
 
-    private static string? Clean(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+    internal static string? Clean(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 
-    private static string? Validate(string? title, string? description, string? meetingPoint)
+    internal static string? Validate(string? title, string? description, string? meetingPoint)
     {
         if (title?.Trim().Length is not (>= 2 and <= 100)) return "Il titolo deve avere da 2 a 100 caratteri.";
         if (description?.Length > 1000) return "La descrizione può avere al massimo 1000 caratteri.";
@@ -322,7 +322,7 @@ public static class EventEndpoints
         return null;
     }
 
-    private static async Task<string?> ValidateGroupAsync(RuntivoDbContext db, Guid clubId, GroupInput g, CancellationToken ct)
+    internal static async Task<string?> ValidateGroupAsync(RuntivoDbContext db, Guid clubId, GroupInput g, CancellationToken ct)
     {
         if (g.Name?.Trim().Length is not (>= 1 and <= 40)) return "il nome deve avere da 1 a 40 caratteri.";
         if (g.DistanceMeters is { } d && d is < 500 or > 100_000) return "la distanza deve essere tra 0,5 e 100 km.";
@@ -336,7 +336,7 @@ public static class EventEndpoints
         return null;
     }
 
-    private static PaceGroup ToGroup(Guid id, Guid eventId, GroupInput g, int order) => new()
+    internal static PaceGroup ToGroup(Guid id, Guid eventId, GroupInput g, int order) => new()
     {
         Id = id, EventId = eventId, Name = g.Name!.Trim(), DistanceMeters = g.DistanceMeters,
         PaceMinSecPerKm = g.PaceMinSecPerKm, PaceMaxSecPerKm = g.PaceMaxSecPerKm,

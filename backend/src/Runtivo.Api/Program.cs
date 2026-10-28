@@ -17,6 +17,7 @@ builder.Services.Configure<AppOptions>(builder.Configuration.GetSection("App"));
 var appOptions = builder.Configuration.GetSection("App").Get<AppOptions>() ?? new AppOptions();
 
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddHostedService<SeriesGenerationService>();
 builder.Services.AddProblemDetails();
 builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
 builder.Services.AddDbContext<RuntivoDbContext>(options =>
@@ -90,6 +91,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c
 app.MapAuthEndpoints();
 app.MapClubEndpoints();
 app.MapEventEndpoints();
+app.MapSeriesEndpoints();
 
 app.Run();
 

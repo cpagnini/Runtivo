@@ -121,6 +121,7 @@ export function EventView({ id }: { id: string }) {
         <p className="muted small">
           <Link href={`/club/${event.clubId}`}>{event.clubName}</Link>
           {event.visibility === "ClubOnly" && " · Solo membri"}
+          {event.seriesId && " · Serie settimanale"}
         </p>
         <h1>{event.title}</h1>
       </div>
@@ -175,6 +176,11 @@ export function EventView({ id }: { id: string }) {
         Condividi
       </button>
 
+      {isAdmin && event.status === "Scheduled" && (
+        <Link className="button secondary" href={`/e/${id}/modifica`}>
+          Modifica l&apos;uscita
+        </Link>
+      )}
       {isAdmin && event.status === "Scheduled" && (
         <button
           className="button danger"

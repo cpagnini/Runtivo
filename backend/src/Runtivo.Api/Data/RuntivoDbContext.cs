@@ -14,6 +14,7 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
     public DbSet<RunEvent> Events => Set<RunEvent>();
     public DbSet<PaceGroup> PaceGroups => Set<PaceGroup>();
     public DbSet<EventRsvp> Rsvps => Set<EventRsvp>();
+    public DbSet<EventSeries> Series => Set<EventSeries>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
@@ -74,6 +75,18 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
             e.HasOne<Club>().WithMany().HasForeignKey(x => x.ClubId).OnDelete(DeleteBehavior.Cascade);
             e.HasMany(x => x.Groups).WithOne().HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(x => new { x.ClubId, x.StartsAtUtc });
+            e.HasOne<EventSeries>().WithMany().HasForeignKey(x => x.SeriesId).OnDelete(DeleteBehavior.SetNull);
+            e.HasIndex(x => new { x.SeriesId, x.OccurrenceLocalDate }).IsUnique();
+        });
+
+        b.Entity<EventSeries>(e =>
+        {
+            e.Property(x => x.Title).HasMaxLength(100);
+            e.Property(x => x.Description).HasMaxLength(1000);
+            e.Property(x => x.MeetingPointLabel).HasMaxLength(120);
+            e.Property(x => x.TimeZoneId).HasMaxLength(50);
+            e.HasOne<Club>().WithMany().HasForeignKey(x => x.ClubId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.ClubId, x.Enabled });
         });
 
         b.Entity<PaceGroup>(e =>

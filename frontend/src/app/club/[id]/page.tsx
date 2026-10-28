@@ -3,7 +3,7 @@
 import { Suspense, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { api, errorMessage, roleLabel, type Club, type Member, type Role } from "@/lib/api";
+import { api, errorMessage, formatWhen, roleLabel, type Club, type EventSummary, type Member, type Role } from "@/lib/api";
 import { useSession } from "@/components/Session";
 import { useLoad } from "@/lib/useLoad";
 import { Card, ErrorText, Loading } from "@/components/ui";
@@ -158,6 +158,42 @@ function AdminPanel({ club, myId }: { club: Club; myId: string }) {
   );
 }
 
+function UpcomingEvents({ clubId, isAdmin }: { clubId: string; isAdmin: boolean }) {
+  const { data, error, loading } = useLoad(() => api<EventSummary[]>(`/clubs/${clubId}/events`), `events-${clubId}`);
+
+  return (
+    <>
+      <div className="row">
+        <h2>Prossime uscite</h2>
+        {isAdmin && (
+          <Link className="button small" href={`/club/${clubId}/eventi/nuovo`}>
+            Nuova uscita
+          </Link>
+        )}
+      </div>
+      <ErrorText>{error}</ErrorText>
+      {loading && <Loading />}
+      {data?.length === 0 && <p className="muted">Nessuna uscita in programma.</p>}
+      <ul className="list">
+        {data?.map((e) => (
+          <li key={e.id}>
+            <Link href={`/e/${e.id}`} className="card stack">
+              <div className="row">
+                <strong>{e.title}</strong>
+                {e.status === "Cancelled" ? <span className="badge">Annullata</span> : e.visibility === "ClubOnly" && <span className="badge">Solo membri</span>}
+              </div>
+              <span>{formatWhen(e.startsAtUtc)}</span>
+              <span className="muted small">
+                {e.meetingPointLabel} · {e.groupCount} {e.groupCount === 1 ? "gruppo" : "gruppi"} · {e.goingCount} iscritti
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 function ClubView() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -245,6 +281,8 @@ function ClubView() {
         )}
         <ErrorText>{actionError}</ErrorText>
       </Card>
+
+      <UpcomingEvents clubId={club.id} isAdmin={isAdmin} />
 
       {isAdmin && user && <AdminPanel club={club} myId={user.id} />}
     </div>

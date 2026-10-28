@@ -11,6 +11,9 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
     public DbSet<ClubMembership> Memberships => Set<ClubMembership>();
     public DbSet<ClubInvitation> Invitations => Set<ClubInvitation>();
     public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
+    public DbSet<RunEvent> Events => Set<RunEvent>();
+    public DbSet<PaceGroup> PaceGroups => Set<PaceGroup>();
+    public DbSet<EventRsvp> Rsvps => Set<EventRsvp>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
@@ -60,6 +63,42 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
             e.Property(x => x.TokenHash).HasMaxLength(64);
             e.HasIndex(x => x.TokenHash).IsUnique();
             e.HasOne<Club>().WithMany().HasForeignKey(x => x.ClubId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<RunEvent>(e =>
+        {
+            e.Property(x => x.Title).HasMaxLength(100);
+            e.Property(x => x.Description).HasMaxLength(1000);
+            e.Property(x => x.TimeZoneId).HasMaxLength(50);
+            e.Property(x => x.MeetingPointLabel).HasMaxLength(120);
+            e.HasOne<Club>().WithMany().HasForeignKey(x => x.ClubId).OnDelete(DeleteBehavior.Cascade);
+            e.HasMany(x => x.Groups).WithOne().HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.ClubId, x.StartsAtUtc });
+        });
+
+        b.Entity<PaceGroup>(e =>
+        {
+            e.Property(x => x.Name).HasMaxLength(40);
+            e.ToTable(t =>
+            {
+                t.HasCheckConstraint("CK_PaceGroups_Pace",
+                    "(\"PaceMinSecPerKm\" IS NULL OR \"PaceMinSecPerKm\" > 0) AND (\"PaceMaxSecPerKm\" IS NULL OR \"PaceMaxSecPerKm\" > 0) " +
+                    "AND (\"PaceMinSecPerKm\" IS NULL OR \"PaceMaxSecPerKm\" IS NULL OR \"PaceMinSecPerKm\" <= \"PaceMaxSecPerKm\")");
+                t.HasCheckConstraint("CK_PaceGroups_Capacity", "\"Capacity\" IS NULL OR \"Capacity\" > 0");
+                t.HasCheckConstraint("CK_PaceGroups_Distance", "\"DistanceMeters\" IS NULL OR \"DistanceMeters\" > 0");
+            });
+        });
+
+        b.Entity<EventRsvp>(e =>
+        {
+            e.HasOne<RunEvent>().WithMany().HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            // Un solo RSVP per utente ed evento; il gruppo dell'RSVP deve esistere.
+            e.HasOne<PaceGroup>().WithMany().HasForeignKey(x => x.PaceGroupId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.EventId, x.UserId }).IsUnique();
+            e.HasIndex(x => x.PaceGroupId);
+            e.ToTable(t => t.HasCheckConstraint("CK_Rsvps_GroupWhenGoing",
+                "(\"Status\" = 'Going' AND \"PaceGroupId\" IS NOT NULL) OR (\"Status\" <> 'Going' AND \"PaceGroupId\" IS NULL)"));
         });
 
         b.Entity<AuditEntry>(e =>

@@ -90,3 +90,79 @@ export function parsePace(text: string): number | null | undefined {
 
 /** Accetta solo percorsi interni, per evitare redirect verso altri siti. */
 export const safeNext = (value: string | null) => (value && /^\/(?!\/)/.test(value) ? value : "/club");
+
+export type Visibility = "Public" | "ClubOnly";
+
+export type Group = {
+  id: string;
+  name: string;
+  distanceMeters: number | null;
+  paceMinSecPerKm: number | null;
+  paceMaxSecPerKm: number | null;
+  leaderUserId: string | null;
+  leaderName: string | null;
+  capacity: number | null;
+  goingCount: number;
+  participants: string[] | null;
+};
+
+export type RunEvent = {
+  id: string;
+  clubId: string;
+  clubName: string;
+  title: string;
+  description: string | null;
+  startsAtUtc: string;
+  timeZoneId: string;
+  meetingPointLabel: string;
+  visibility: Visibility;
+  status: "Scheduled" | "Cancelled";
+  myRole: Role | null;
+  groups: Group[];
+  myRsvp: { status: "Going" | "NotGoing"; paceGroupId: string | null } | null;
+};
+
+export type EventSummary = {
+  id: string;
+  title: string;
+  startsAtUtc: string;
+  meetingPointLabel: string;
+  visibility: Visibility;
+  status: "Scheduled" | "Cancelled";
+  groupCount: number;
+  goingCount: number;
+};
+
+export type MyEvent = {
+  eventId: string;
+  title: string;
+  startsAtUtc: string;
+  meetingPointLabel: string;
+  eventStatus: "Scheduled" | "Cancelled";
+  clubId: string;
+  clubName: string;
+  groupName: string;
+};
+
+export function formatWhen(iso: string, timeZone = "Europe/Rome"): string {
+  const text = new Date(iso).toLocaleString("it-IT", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone,
+  });
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+export function formatDistance(meters: number | null): string {
+  if (meters == null) return "";
+  return `${(meters / 1000).toLocaleString("it-IT", { maximumFractionDigits: 1 })} km`;
+}
+
+export function formatPaceRange(min: number | null, max: number | null): string {
+  if (min != null && max != null) return min === max ? `${formatPace(min)} min/km` : `${formatPace(min)}–${formatPace(max)} min/km`;
+  const one = min ?? max;
+  return one != null ? `circa ${formatPace(one)} min/km` : "";
+}

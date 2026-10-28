@@ -164,6 +164,47 @@ namespace Runtivo.Api.Data.Migrations
                     b.ToTable("Memberships");
                 });
 
+            modelBuilder.Entity("Runtivo.Api.Domain.EventRsvp", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("PaceGroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaceGroupId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("EventId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("Rsvps", t =>
+                        {
+                            t.HasCheckConstraint("CK_Rsvps_GroupWhenGoing", "(\"Status\" = 'Going' AND \"PaceGroupId\" IS NOT NULL) OR (\"Status\" <> 'Going' AND \"PaceGroupId\" IS NULL)");
+                        });
+                });
+
             modelBuilder.Entity("Runtivo.Api.Domain.LoginToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -197,6 +238,106 @@ namespace Runtivo.Api.Data.Migrations
                     b.HasIndex("Email", "CreatedAt");
 
                     b.ToTable("LoginTokens");
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Domain.PaceGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("Capacity")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DistanceMeters")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("LeaderUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<int?>("PaceMaxSecPerKm")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PaceMinSecPerKm")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("PaceGroups", t =>
+                        {
+                            t.HasCheckConstraint("CK_PaceGroups_Capacity", "\"Capacity\" IS NULL OR \"Capacity\" > 0");
+
+                            t.HasCheckConstraint("CK_PaceGroups_Distance", "\"DistanceMeters\" IS NULL OR \"DistanceMeters\" > 0");
+
+                            t.HasCheckConstraint("CK_PaceGroups_Pace", "(\"PaceMinSecPerKm\" IS NULL OR \"PaceMinSecPerKm\" > 0) AND (\"PaceMaxSecPerKm\" IS NULL OR \"PaceMaxSecPerKm\" > 0) AND (\"PaceMinSecPerKm\" IS NULL OR \"PaceMaxSecPerKm\" IS NULL OR \"PaceMinSecPerKm\" <= \"PaceMaxSecPerKm\")");
+                        });
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Domain.RunEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClubId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("MeetingPointLabel")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<DateTimeOffset>("StartsAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("TimeZoneId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Visibility")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClubId", "StartsAtUtc");
+
+                    b.ToTable("Events");
                 });
 
             modelBuilder.Entity("Runtivo.Api.Domain.User", b =>
@@ -265,6 +406,49 @@ namespace Runtivo.Api.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Domain.EventRsvp", b =>
+                {
+                    b.HasOne("Runtivo.Api.Domain.RunEvent", null)
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Runtivo.Api.Domain.PaceGroup", null)
+                        .WithMany()
+                        .HasForeignKey("PaceGroupId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Runtivo.Api.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Domain.PaceGroup", b =>
+                {
+                    b.HasOne("Runtivo.Api.Domain.RunEvent", null)
+                        .WithMany("Groups")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Domain.RunEvent", b =>
+                {
+                    b.HasOne("Runtivo.Api.Domain.Club", null)
+                        .WithMany()
+                        .HasForeignKey("ClubId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Domain.RunEvent", b =>
+                {
+                    b.Navigation("Groups");
                 });
 #pragma warning restore 612, 618
         }

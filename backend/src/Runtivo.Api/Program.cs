@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Runtivo.Api.Auth;
 using Runtivo.Api.Clubs;
 using Runtivo.Api.Common;
+using Runtivo.Api.Events;
 using Runtivo.Api.Data;
 using Runtivo.Api.Health;
 
@@ -88,6 +89,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c
 
 app.MapAuthEndpoints();
 app.MapClubEndpoints();
+app.MapEventEndpoints();
 
 app.Run();
 

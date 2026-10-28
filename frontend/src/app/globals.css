@@ -232,3 +232,39 @@ label.inline select {
 .invite-result {
   margin-top: 1rem;
 }
+
+.group-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.group-card.selected {
+  border-color: var(--accent);
+  border-width: 2px;
+}
+
+.banner {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--danger);
+  border-radius: 0.5rem;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.names {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.group-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}

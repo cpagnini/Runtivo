@@ -16,7 +16,8 @@ export function Header() {
       <nav className="nav" aria-label="Principale">
         {status === "authenticated" && user ? (
           <>
-            <Link href="/club">I miei club</Link>
+            <Link href="/le-mie-corse">Le mie corse</Link>
+            <Link href="/club">Club</Link>
             <Link href="/profilo">{user.displayName}</Link>
             <button
               className="link-button"

@@ -55,6 +55,7 @@ public class ApiFixture : IDisposable
             b.UseSetting("Database:MigrateOnStartup", "true");
             b.UseSetting("App:RequireSecureCookie", "false");
             b.UseSetting("App:AuthRequestsPerMinute", "100000");
+            b.UseSetting("App:ApiRequestsPerMinute", "1000000");
             b.UseSetting("Series:BackgroundGeneration", "false");
             b.ConfigureServices(s =>
             {

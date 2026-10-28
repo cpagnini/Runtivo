@@ -5,6 +5,9 @@ public class AppOptions
     public string PublicBaseUrl { get; set; } = "http://localhost:3000";
     public bool RequireSecureCookie { get; set; } = true;
     public int AuthRequestsPerMinute { get; set; } = 20;
+    public int ApiRequestsPerMinute { get; set; } = 300;
+    /// <summary>Attivare solo se il backend è dietro il proxy del frontend e non raggiungibile direttamente.</summary>
+    public bool TrustForwardedHeaders { get; set; }
 }
 
 public interface IEmailSender

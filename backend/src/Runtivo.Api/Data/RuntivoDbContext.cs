@@ -15,6 +15,7 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
     public DbSet<PaceGroup> PaceGroups => Set<PaceGroup>();
     public DbSet<EventRsvp> Rsvps => Set<EventRsvp>();
     public DbSet<EventSeries> Series => Set<EventSeries>();
+    public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
@@ -112,6 +113,12 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
             e.HasIndex(x => x.PaceGroupId);
             e.ToTable(t => t.HasCheckConstraint("CK_Rsvps_GroupWhenGoing",
                 "(\"Status\" = 'Going' AND \"PaceGroupId\" IS NOT NULL) OR (\"Status\" <> 'Going' AND \"PaceGroupId\" IS NULL)"));
+        });
+
+        b.Entity<NotificationPreference>(e =>
+        {
+            e.HasKey(x => x.UserId);
+            e.HasOne<User>().WithOne().HasForeignKey<NotificationPreference>(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         b.Entity<AuditEntry>(e =>

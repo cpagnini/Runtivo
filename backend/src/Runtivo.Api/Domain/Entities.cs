@@ -68,3 +68,12 @@ public class AuditEntry
     public required string TargetId { get; set; }
     public DateTimeOffset Timestamp { get; set; }
 }
+
+public class NotificationPreference
+{
+    public Guid UserId { get; set; }
+    public bool EventChangesEmail { get; set; } = true;
+    public bool RemindersEmail { get; set; }
+    public bool DiscoveryEmails { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+}

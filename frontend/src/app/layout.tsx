@@ -27,10 +27,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="it" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
+        <a className="skip-link" href="#contenuto">
+          Vai al contenuto
+        </a>
         <PwaRegister />
         <SessionProvider>
           <Header />
-          <main className="page">{children}</main>
+          <main id="contenuto" tabIndex={-1} className="page">{children}</main>
         </SessionProvider>
       </body>
     </html>

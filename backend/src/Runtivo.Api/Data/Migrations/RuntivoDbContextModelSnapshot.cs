@@ -307,6 +307,28 @@ namespace Runtivo.Api.Data.Migrations
                     b.ToTable("LoginTokens");
                 });
 
+            modelBuilder.Entity("Runtivo.Api.Domain.NotificationPreference", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("DiscoveryEmails")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("EventChangesEmail")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("RemindersEmail")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("NotificationPreferences");
+                });
+
             modelBuilder.Entity("Runtivo.Api.Domain.PaceGroup", b =>
                 {
                     b.Property<Guid>("Id")
@@ -509,6 +531,15 @@ namespace Runtivo.Api.Data.Migrations
                     b.HasOne("Runtivo.Api.Domain.Club", null)
                         .WithMany()
                         .HasForeignKey("ClubId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Domain.NotificationPreference", b =>
+                {
+                    b.HasOne("Runtivo.Api.Domain.User", null)
+                        .WithOne()
+                        .HasForeignKey("Runtivo.Api.Domain.NotificationPreference", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

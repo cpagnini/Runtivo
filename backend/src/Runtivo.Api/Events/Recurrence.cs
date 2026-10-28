@@ -50,45 +50,39 @@ public static class Recurrence
         if (from > to) return 0;
         var template = ReadGroups(series);
 
-        // Due tentativi: se un'altra richiesta genera le stesse date in parallelo, l'indice univoco
-        // respinge i duplicati e al secondo giro si ricalcolano solo le date davvero mancanti.
-        for (var attempt = 0; attempt < 2; attempt++)
+        // Una sola generazione alla volta per serie (lock di transazione su Postgres): richieste concorrenti
+        // che inserissero le stesse date in ordine diverso andrebbero in deadlock. L'indice univoco resta
+        // come garanzia finale contro i duplicati.
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        await db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({series.Id.ToString()}, 0))", ct);
+
+        var existing = (await db.Events.Where(e => e.SeriesId == series.Id && e.OccurrenceLocalDate != null)
+            .Select(e => e.OccurrenceLocalDate!.Value).ToListAsync(ct)).ToHashSet();
+        var created = 0;
+        foreach (var (date, startsAt) in Occurrences(series.Weekday, series.LocalStartTime, series.TimeZoneId, from, to))
         {
-            var existing = (await db.Events.Where(e => e.SeriesId == series.Id && e.OccurrenceLocalDate != null)
-                .Select(e => e.OccurrenceLocalDate!.Value).ToListAsync(ct)).ToHashSet();
-            var created = 0;
-            foreach (var (date, startsAt) in Occurrences(series.Weekday, series.LocalStartTime, series.TimeZoneId, from, to))
+            if (existing.Contains(date) || startsAt <= now) continue;
+            var ev = new RunEvent
             {
-                if (existing.Contains(date) || startsAt <= now) continue;
-                var ev = new RunEvent
+                Id = Guid.NewGuid(), ClubId = series.ClubId, Title = series.Title, Description = series.Description,
+                StartsAtUtc = startsAt, TimeZoneId = series.TimeZoneId, MeetingPointLabel = series.MeetingPointLabel,
+                Visibility = series.Visibility, CreatedByUserId = series.CreatedByUserId, CreatedAt = now,
+                SeriesId = series.Id, OccurrenceLocalDate = date,
+            };
+            for (var i = 0; i < template.Count; i++)
+                ev.Groups.Add(new PaceGroup
                 {
-                    Id = Guid.NewGuid(), ClubId = series.ClubId, Title = series.Title, Description = series.Description,
-                    StartsAtUtc = startsAt, TimeZoneId = series.TimeZoneId, MeetingPointLabel = series.MeetingPointLabel,
-                    Visibility = series.Visibility, CreatedByUserId = series.CreatedByUserId, CreatedAt = now,
-                    SeriesId = series.Id, OccurrenceLocalDate = date,
-                };
-                for (var i = 0; i < template.Count; i++)
-                    ev.Groups.Add(new PaceGroup
-                    {
-                        Id = Guid.NewGuid(), EventId = ev.Id, Name = template[i].Name, DistanceMeters = template[i].DistanceMeters,
-                        PaceMinSecPerKm = template[i].PaceMinSecPerKm, PaceMaxSecPerKm = template[i].PaceMaxSecPerKm,
-                        Capacity = template[i].Capacity, SortOrder = i,
-                    });
-                db.Events.Add(ev);
-                created++;
-            }
-            if (created == 0) return 0;
-            try
-            {
-                await db.SaveChangesAsync(ct);
-                return created;
-            }
-            catch (DbUpdateException)
-            {
-                db.ChangeTracker.Clear();
-            }
+                    Id = Guid.NewGuid(), EventId = ev.Id, Name = template[i].Name, DistanceMeters = template[i].DistanceMeters,
+                    PaceMinSecPerKm = template[i].PaceMinSecPerKm, PaceMaxSecPerKm = template[i].PaceMaxSecPerKm,
+                    Capacity = template[i].Capacity, SortOrder = i,
+                });
+            db.Events.Add(ev);
+            created++;
         }
-        return 0;
+        if (created == 0) return 0;
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return created;
     }
 }
 

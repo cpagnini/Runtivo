@@ -11,7 +11,7 @@ namespace Runtivo.Api.Auth;
 
 public record RequestLinkDto(string? Email);
 public record VerifyDto(string? Token);
-public record UpdateProfileDto(string? DisplayName, string? City, int? PreferredPaceSecPerKm);
+public record UpdateProfileDto(string? DisplayName, string? City, int? PreferredPaceSecPerKm, bool? ClearPreferredPace);
 public record UserDto(Guid Id, string Email, string DisplayName, string? City, int? PreferredPaceSecPerKm);
 
 public static class AuthEndpoints
@@ -124,7 +124,8 @@ public static class AuthEndpoints
                 if (city.Length > 80) return Http.Problem(400, "La località può avere al massimo 80 caratteri.");
                 user.City = city.Length == 0 ? null : city;
             }
-            if (dto.PreferredPaceSecPerKm is { } pace)
+            if (dto.ClearPreferredPace == true) user.PreferredPaceSecPerKm = null;
+            else if (dto.PreferredPaceSecPerKm is { } pace)
             {
                 if (pace is < 120 or > 1200) return Http.Problem(400, "Passo non valido.");
                 user.PreferredPaceSecPerKm = pace;

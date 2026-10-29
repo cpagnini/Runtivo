@@ -17,6 +17,9 @@ In sviluppo l'API applica le migrazioni all'avvio e scrive nel log i link di acc
 
 Verifica: `http://localhost:5044/health` e `/health/ready`; la home su `http://localhost:3000`.
 
+## Accesso con Google (facoltativo)
+Vedi [docs/accesso-google.md](docs/accesso-google.md): senza credenziali resta solo il link via email.
+
 ## Test
 ```bash
 dotnet test backend/Runtivo.sln

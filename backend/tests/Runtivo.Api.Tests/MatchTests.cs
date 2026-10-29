@@ -218,7 +218,7 @@ public class MatchTests(ApiFixture api)
     public async Task Export_includes_my_intent_but_not_others()
     {
         RequireDb();
-        var a = await RunnerAsync();
+        var a = await RunnerAsync("Piazza del Comune");
         var b = await RunnerAsync();
 
         var raw = await (await a.Client.GetAsync("/api/me/export")).Content.ReadAsStringAsync();

@@ -26,6 +26,9 @@ public static class InterestEndpoints
             if (mine is null) return Http.Problem(409, "Pubblica o riattiva il tuo annuncio per mostrare interesse.");
             var other = await MatchService.FindOneAsync(db, mine, toUserId, now, ct);
             if (other is null) return Http.Problem(404, "Persona non trovata.");
+            // Un'uscita a due richiede che entrambi accettino di correre in coppia; altrimenti si propone un gruppo.
+            if (!(mine.Intent.AllowPairs && other.Intent.AllowPairs))
+                return Http.Problem(400, "Una di voi due preferisce uscite di gruppo: proponi un'uscita con almeno altre due persone.");
 
             if (!await db.Interests.AnyAsync(i => i.FromUserId == me && i.ToUserId == toUserId, ct))
             {

@@ -173,4 +173,19 @@ public class InterestTests(ApiFixture api)
         var statuses = run.GetProperty("participants").EnumerateArray().Select(p => p.GetProperty("status").GetString()).ToList();
         Assert.Equal(["Pending", "Pending"], statuses);
     }
+
+    [SkippableFact]
+    public async Task Interest_is_refused_when_one_of_the_two_does_not_accept_pairs()
+    {
+        RequireDb();
+        var a = await harness.RunnerAsync(overrides: new { AllowPairs = true });
+        var groupsOnly = await harness.RunnerAsync(overrides: new { AllowPairs = false });
+
+        var refused = await Interest(a.Client, groupsOnly.UserId);
+        var refusedReverse = await Interest(groupsOnly.Client, a.UserId);
+
+        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, refusedReverse.StatusCode);
+        Assert.Contains("gruppo", await refused.Content.ReadAsStringAsync());
+    }
 }

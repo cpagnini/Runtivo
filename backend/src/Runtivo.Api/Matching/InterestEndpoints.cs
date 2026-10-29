@@ -2,7 +2,9 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Runtivo.Api.Common;
+using Microsoft.Extensions.Options;
 using Runtivo.Api.Data;
+using Runtivo.Api.Safety;
 
 namespace Runtivo.Api.Matching;
 
@@ -15,7 +17,7 @@ public static class InterestEndpoints
     {
         // «Mi interessa»: privato. Solo verso persone compatibili adesso; per ogni altro id la risposta è 404,
         // così l'endpoint non si può usare per sondare chi esiste o chi ha un annuncio.
-        app.MapPost("/api/interests", async ([FromBody] InterestInput dto, ClaimsPrincipal p, RuntivoDbContext db, TimeProvider time, CancellationToken ct) =>
+        app.MapPost("/api/interests", async ([FromBody] InterestInput dto, ClaimsPrincipal p, RuntivoDbContext db, TimeProvider time, IOptions<AppOptions> opts, CancellationToken ct) =>
         {
             var me = p.UserId();
             var now = time.GetUtcNow();
@@ -32,8 +34,21 @@ public static class InterestEndpoints
 
             if (!await db.Interests.AnyAsync(i => i.FromUserId == me && i.ToUserId == toUserId, ct))
             {
+                // Un account appena registrato ha un tetto giornaliero; conteggio e inserimento sono atomici (lock per persona).
+                await using var tx = await db.Database.BeginTransactionAsync(ct);
+                if (await NewAccountLimits.IsNewAsync(db, me, now, opts.Value.NewAccountDays, ct))
+                {
+                    await NewAccountLimits.LockAsync(db, "interest", me, ct);
+                    var recent = await db.Interests.CountAsync(i => i.FromUserId == me && i.CreatedAt > now.AddHours(-24), ct);
+                    if (recent >= NewAccountLimits.InterestsPerDay)
+                        return Http.Problem(429, $"Sei iscritto da poco: puoi mostrare interesse a {NewAccountLimits.InterestsPerDay} persone al giorno. Riprova domani.");
+                }
                 db.Interests.Add(new Interest { FromUserId = me, ToUserId = toUserId, CreatedAt = now });
-                try { await db.SaveChangesAsync(ct); }
+                try
+                {
+                    await db.SaveChangesAsync(ct);
+                    await tx.CommitAsync(ct);
+                }
                 catch (DbUpdateException) { db.ChangeTracker.Clear(); /* richiesta ripetuta in parallelo: esiste già */ }
             }
 

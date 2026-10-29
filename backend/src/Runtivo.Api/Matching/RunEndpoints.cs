@@ -1,7 +1,9 @@
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Runtivo.Api.Common;
+using Microsoft.Extensions.Options;
 using Runtivo.Api.Data;
+using Runtivo.Api.Safety;
 
 namespace Runtivo.Api.Matching;
 
@@ -20,7 +22,7 @@ public static class RunEndpoints
 
     public static void MapRunEndpoints(this WebApplication app)
     {
-        app.MapPost("/api/runs", async (CreateRunDto dto, ClaimsPrincipal p, RuntivoDbContext db, TimeProvider time, CancellationToken ct) =>
+        app.MapPost("/api/runs", async (CreateRunDto dto, ClaimsPrincipal p, RuntivoDbContext db, TimeProvider time, IOptions<AppOptions> opts, CancellationToken ct) =>
         {
             var me = p.UserId();
             var now = time.GetUtcNow();
@@ -39,8 +41,16 @@ public static class RunEndpoints
                 return Http.Problem(400, "Il passo non è valido.");
             if (dto.DistanceMeters is { } dist && (dist < 1000 || dist > 60000)) return Http.Problem(400, "La distanza deve essere tra 1 e 60 km.");
 
+            // Conteggio delle proposte in attesa e inserimento sono atomici (lock per persona): richieste parallele non superano il tetto.
+            await using var tx = await db.Database.BeginTransactionAsync(ct);
+            await NewAccountLimits.LockAsync(db, "run", me, ct);
+            var isNew = await NewAccountLimits.IsNewAsync(db, me, now, opts.Value.NewAccountDays, ct);
+            var maxOpen = isNew ? NewAccountLimits.OpenProposals : MaxOpenProposals;
             var open = await db.SpontaneousRuns.CountAsync(r => r.CreatedByUserId == me && r.Status == RunStatus.Proposed && r.StartsAtUtc > now, ct);
-            if (open >= MaxOpenProposals) return Http.Problem(409, $"Hai già {MaxOpenProposals} proposte in attesa: aspetta le risposte prima di farne altre.");
+            if (open >= maxOpen)
+                return Http.Problem(409, isNew
+                    ? "Sei iscritto da poco: puoi avere una sola proposta in attesa alla volta."
+                    : $"Hai già {MaxOpenProposals} proposte in attesa: aspetta le risposte prima di farne altre.");
 
             // Si invitano solo persone compatibili adesso: per ogni altro id la risposta è 404.
             var people = new List<Compatible>();
@@ -65,6 +75,7 @@ public static class RunEndpoints
                 db.RunParticipants.Add(new RunParticipant { RunId = run.Id, UserId = other.UserId, Status = ParticipantStatus.Pending, UpdatedAt = now });
             db.Audit(time, me, "run.create", "SpontaneousRun", run.Id);
             await db.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
             return Results.Created($"/api/runs/{run.Id}", new { run.Id });
         }).RequireAuthorization();
 

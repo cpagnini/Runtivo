@@ -83,7 +83,7 @@ public class ApiFixture : IDisposable
     }
 
     /// <summary>
-    /// Gli annunci sopravvivono tra un'esecuzione e l'altra e farebbero comparire "vecchi" candidati nei match.
+    /// Annunci e segnalazioni sopravvivono tra un'esecuzione e l'altra: i primi farebbero comparire "vecchi" candidati nei match, le seconde riempirebbero la coda di moderazione.
     /// Si svuotano all'avvio, ma solo se il database è chiaramente di test (il nome contiene "test").
     /// </summary>
     private void ResetMatchingData(string connectionString)
@@ -93,6 +93,7 @@ public class ApiFixture : IDisposable
         var db = scope.ServiceProvider.GetRequiredService<RuntivoDbContext>();
         db.UserBlocks.ExecuteDelete();
         db.RunIntents.ExecuteDelete();
+        db.Reports.ExecuteDelete();
     }
 
     public HttpClient NewClient(bool csrfHeader = true)

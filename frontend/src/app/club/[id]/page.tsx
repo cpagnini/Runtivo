@@ -180,7 +180,7 @@ function UpcomingEvents({ clubId, isAdmin }: { clubId: string; isAdmin: boolean 
             <Link href={`/e/${e.id}`} className="card stack">
               <div className="row">
                 <strong>{e.title}</strong>
-                {e.status === "Cancelled" ? <span className="badge">Annullata</span> : e.visibility === "ClubOnly" && <span className="badge">Solo membri</span>}
+                {e.status === "Cancelled" ? <span className="badge">Annullata</span> : e.visibility === "ClubOnly" && <span className="badge">Solo membrə</span>}
               </div>
               <span>{formatWhen(e.startsAtUtc)}</span>
               <span className="muted small">
@@ -250,7 +250,7 @@ function ClubView() {
           </div>
         ) : club.myStatus === "Pending" ? (
           <div className="stack">
-            <p>Richiesta inviata: un amministratore la valuterà.</p>
+            <p>Richiesta inviata: unə amministratorə la valuterà.</p>
             <button
               className="button secondary"
               disabled={busy}

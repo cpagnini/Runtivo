@@ -170,7 +170,7 @@ function CompanionsContent({ data, reload, needsName }: { data: Loaded; reload: 
       )}
       {needsName && !intent && (
         <p className="banner" role="alert">
-          Il tuo nome visibile è ancora quello ricavato dall&apos;email. Prima di pubblicare scegli il nome che vuoi mostrare agli altri nel{" "}
+          Il tuo nome visibile è ancora quello ricavato dall&apos;email. Prima di pubblicare scegli il nome che vuoi mostrare agli altrə nel{" "}
           <Link href="/profilo">profilo</Link>.
         </p>
       )}

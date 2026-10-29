@@ -63,7 +63,7 @@ function ProposeForm({ matches, places, preselected }: { matches: Match[]; place
         <Link href="/compagni">← Compagnia</Link>
       </p>
       <h1>Proponi un&apos;uscita</h1>
-      <p className="muted">Chi inviti dovrà confermare giorno, ora e luogo. L&apos;uscita è confermata solo quando hanno risposto tutti.</p>
+      <p className="muted">Chi inviti dovrà confermare giorno, ora e luogo. L&apos;uscita è confermata solo quando hanno risposto tuttə.</p>
 
       <fieldset className="slots">
         <legend>Chi inviti (fino a {MAX_INVITEES})</legend>

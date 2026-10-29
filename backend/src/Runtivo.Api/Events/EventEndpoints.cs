@@ -332,7 +332,7 @@ public static class EventEndpoints
         if (g.Capacity is { } c && c is < 1 or > 500) return "la capienza deve essere tra 1 e 500.";
         if (g.LeaderUserId is { } leader &&
             !await db.Memberships.AnyAsync(m => m.ClubId == clubId && m.UserId == leader && m.Status == MembershipStatus.Active, ct))
-            return "il capogruppo deve essere un membro del club.";
+            return "lə capogruppo deve essere unə membrə del club.";
         return null;
     }
 

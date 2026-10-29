@@ -117,7 +117,7 @@ function RunDetails({ run, myId, reload }: { run: Run; myId: string; reload: () 
       </div>
 
       {run.status === "Cancelled" && <p className="banner">Questa uscita è stata annullata. {run.cancelReason}</p>}
-      {run.status === "Confirmed" && !started && <p role="status">Tutti hanno confermato: ci vediamo lì!</p>}
+      {run.status === "Confirmed" && !started && <p role="status">Tuttə hanno confermato: ci vediamo lì!</p>}
       {run.status === "Proposed" && open && <p className="muted">{waiting > 0 ? `In attesa della risposta di ${waiting} ${waiting === 1 ? "persona" : "persone"}.` : "In attesa di conferma."}</p>}
       {started && run.status !== "Cancelled" && <p className="muted">L&apos;uscita è già iniziata.</p>}
 
@@ -179,12 +179,12 @@ function RunDetails({ run, myId, reload }: { run: Run; myId: string; reload: () 
         </div>
       )}
       {open && run.myStatus === "Confirmed" && (
-        <button className="button secondary" disabled={busy} onClick={() => act("decline", "Vuoi lasciare questa uscita? Gli altri ne saranno informati dalla pagina.")}>
+        <button className="button secondary" disabled={busy} onClick={() => act("decline", "Vuoi lasciare questa uscita? Lə altrə ne saranno informatə dalla pagina.")}>
           Non posso più
         </button>
       )}
       {open && run.isOrganizer && (
-        <button className="button danger" disabled={busy} onClick={() => act("cancel", "Annullare l'uscita per tutti?")}>
+        <button className="button danger" disabled={busy} onClick={() => act("cancel", "Annullare l'uscita per tuttə?")}>
           Annulla l&apos;uscita
         </button>
       )}

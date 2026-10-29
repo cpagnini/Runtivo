@@ -210,7 +210,7 @@ public static class ClubEndpoints
             await using var tx = await db.Database.BeginTransactionAsync(ct);
             await LockClubAsync(db, clubId, ct);
             var m = await db.Memberships.FirstOrDefaultAsync(x => x.ClubId == clubId && x.UserId == userId, ct);
-            if (m is null || m.Status != MembershipStatus.Active) return Http.Problem(404, "Membro non trovato.");
+            if (m is null || m.Status != MembershipStatus.Active) return Http.Problem(404, "Membrə non trovato.");
             if (m.Role == ClubRole.Admin && dto.Role != ClubRole.Admin && await IsLastAdminAsync(db, clubId, ct))
                 return Http.Problem(409, "Il club deve avere almeno una persona che lo amministra.");
 
@@ -231,7 +231,7 @@ public static class ClubEndpoints
             await using var tx = await db.Database.BeginTransactionAsync(ct);
             await LockClubAsync(db, clubId, ct);
             var m = await db.Memberships.FirstOrDefaultAsync(x => x.ClubId == clubId && x.UserId == userId, ct);
-            if (m is null) return Http.Problem(404, "Membro non trovato.");
+            if (m is null) return Http.Problem(404, "Membrə non trovato.");
             if (m.Role == ClubRole.Admin && m.Status == MembershipStatus.Active && await IsLastAdminAsync(db, clubId, ct))
                 return Http.Problem(409, "Il club deve avere almeno una persona che lo amministra.");
 

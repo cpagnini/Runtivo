@@ -71,7 +71,7 @@ export type Member = {
 };
 
 export const roleLabel: Record<Role, string> = {
-  Member: "Membro",
+  Member: "Membrə",
   Leader: "Capogruppo",
   Admin: "Admin",
 };

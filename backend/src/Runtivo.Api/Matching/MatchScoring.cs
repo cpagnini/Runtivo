@@ -66,7 +66,7 @@ public static class MatchScoring
         if (distance >= 0.6) reasons.Add("Distanze di corsa simili");
 
         var slots = Availability.Slots(shared).Select(s => $"{DayNames[(int)s.Day]} {BandNames[(int)s.Band]}").ToList();
-        reasons.Add("Liberi insieme: " + (slots.Count <= 3 ? string.Join(", ", slots) : string.Join(", ", slots.Take(3)) + $" e altri {slots.Count - 3}"));
+        reasons.Add("Liberə insieme: " + (slots.Count <= 3 ? string.Join(", ", slots) : string.Join(", ", slots.Take(3)) + $" e altri {slots.Count - 3}"));
 
         reasons.Add(distanceKm < 1 ? "Nella stessa zona" : $"A circa {Math.Max(1, (int)Math.Round(distanceKm))} km da te");
         if (sameType) reasons.Add("Stessa voglia: corsa " + TypeLabel(type));

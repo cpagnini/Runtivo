@@ -20,8 +20,12 @@ Data: 2026-10-29 · Stato: accettata · Estende la scelta «solo luoghi curati»
 - Si rifiutano email, indirizzi web, numeri di telefono e nomi di altre app (WhatsApp, Instagram…): lo scambio dei contatti avviene dopo la conoscenza. Le segnalazioni restano lo strumento per gli abusi.
 - Non entra nel calcolo del punteggio.
 
-## Testi neutri rispetto al genere
-Niente aggettivi o participi riferiti alla persona («libero», «disposto», «iscritto», «invitato»): si usano formule come «quando puoi correre», «adesioni», «chi amministra il club», «Hai creato l'account da poco». Etichetta del ruolo `Admin`. Da seguire nei testi futuri.
+## Testi inclusivi
+Si usano due strumenti, nell'ordine:
+1. **Formule neutre**, quando esistono: «quando puoi correre», «adesioni», «chi amministra il club», «Hai creato l'account da poco», «questa persona». Niente aggettivi o participi riferiti alla persona («libero», «disposto», «iscritto»).
+2. **Schwa (ə)** dove la formula neutra non c'è o appesantirebbe il testo: «unə amministratorə», «tuttə», «lə altrə», «lə membrə», «lə capogruppo», «Membrə» (etichetta del ruolo). Il plurale si scrive con la stessa ə (non con ɜ).
+Eccezioni: `Capogruppo` e `Admin` (etichette dei ruoli) restano invariate perché non hanno genere. I valori tecnici (`Member`, `ClubOnly`) non cambiano.
+**Da sapere:** alcuni lettori di schermo leggono la ə in modo imperfetto. Dove il testo è importante per chi usa un lettore di schermo si preferisce la formula neutra. Da seguire nei testi futuri.
 
 ## Grafica
 Palette indaco→verde acqua con accento corallo, intestazione fissa con sfocatura, schede con ombre morbide, pulsanti con sfumatura, home con pannello d'apertura e due percorsi (compagnia / club), schede dei match con iniziale, indicatore di compatibilità e frase libera. Rispetta tema scuro e «riduci animazioni».

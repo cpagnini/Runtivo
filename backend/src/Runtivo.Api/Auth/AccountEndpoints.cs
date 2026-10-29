@@ -125,7 +125,7 @@ public static class AccountEndpoints
                 if (otherAdmins > 0) continue;
                 var otherMembers = await db.Memberships.CountAsync(m => m.ClubId == club.Id && m.UserId != userId && m.Status == MembershipStatus.Active, ct);
                 if (otherMembers > 0)
-                    return Http.Problem(409, $"In «{club.Name}» sei l'unica persona che amministra il club, e ci sono altri membri: assegna prima il ruolo a qualcun altro.");
+                    return Http.Problem(409, $"In «{club.Name}» sei l'unica persona che amministra il club, e ci sono altrə membrə: assegna prima il ruolo a qualcunə altrə.");
                 clubsToDelete.Add(club.Id);
             }
 

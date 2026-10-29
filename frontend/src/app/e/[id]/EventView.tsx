@@ -75,7 +75,7 @@ export function EventView({ id }: { id: string }) {
         <h1>Evento non trovato</h1>
         <ErrorText>{error}</ErrorText>
         {status !== "authenticated" && (
-          <p className="muted">Se l&apos;evento è riservato ai membri di un club, accedi per vederlo.</p>
+          <p className="muted">Se l&apos;evento è riservato a lə membrə di un club, accedi per vederlo.</p>
         )}
       </div>
     );
@@ -121,7 +121,7 @@ export function EventView({ id }: { id: string }) {
       <div>
         <p className="muted small">
           <Link href={`/club/${event.clubId}`}>{event.clubName}</Link>
-          {event.visibility === "ClubOnly" && " · Solo membri"}
+          {event.visibility === "ClubOnly" && " · Solo membrə"}
           {event.seriesId && " · Serie settimanale"}
         </p>
         <h1>{event.title}</h1>

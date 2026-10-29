@@ -19,7 +19,7 @@ export default function MyClubsPage() {
       {data?.length === 0 && (
         <div className="card">
           <p>Non fai ancora parte di nessun club.</p>
-          <p className="muted">Crea il tuo, oppure apri il link di invito che ti ha mandato un amministratore.</p>
+          <p className="muted">Crea il tuo, oppure apri il link di invito che ti ha mandato unə amministratorə.</p>
         </div>
       )}
       <ul className="list">

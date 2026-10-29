@@ -31,7 +31,7 @@ function AcceptInvitation() {
       <div className="stack">
         <h1>Invito non utilizzabile</h1>
         <ErrorText>{error}</ErrorText>
-        <p className="muted">Chiedi a un amministratore del club di crearne uno nuovo.</p>
+        <p className="muted">Chiedi a unə amministratorə del club di crearne uno nuovo.</p>
         {clubId && (
           <Link className="button secondary" href={`/club/${clubId}`}>
             Vai alla pagina del club

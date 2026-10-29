@@ -76,7 +76,7 @@ function EditForm({ event }: { event: RunEvent }) {
         Chi può vederla
         <select value={visibility} onChange={(e) => setVisibility(e.target.value as Visibility)}>
           <option value="Public">Chiunque abbia il link</option>
-          <option value="ClubOnly">Solo i membri del club</option>
+          <option value="ClubOnly">Solo lə membrə del club</option>
         </select>
       </label>
       <label>

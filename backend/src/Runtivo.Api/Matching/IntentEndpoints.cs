@@ -49,7 +49,7 @@ public static class IntentEndpoints
             // Il nome predefinito è la parte locale dell'email: mostrarlo agli altri rivelerebbe un dato personale.
             var user = await db.Users.AsNoTracking().Where(u => u.Id == userId).Select(u => new { u.Email, u.DisplayName }).FirstAsync(ct);
             if (string.Equals(user.DisplayName, user.Email[..user.Email.IndexOf('@')], StringComparison.OrdinalIgnoreCase))
-                return Http.Problem(400, "Prima di pubblicare l'annuncio scegli il nome che vuoi mostrare agli altri, nel tuo profilo.");
+                return Http.Problem(400, "Prima di pubblicare l'annuncio scegli il nome che vuoi mostrare agli altrə, nel tuo profilo.");
 
             var intent = await db.RunIntents.FirstOrDefaultAsync(i => i.UserId == userId, ct);
             // La dichiarazione di maggiore età si chiede alla prima pubblicazione e non si azzera con le modifiche.

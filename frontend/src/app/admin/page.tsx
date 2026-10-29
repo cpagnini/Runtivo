@@ -14,7 +14,7 @@ function ReportRow({ report, onDone }: { report: AdminReport; onDone: () => void
   async function resolve(action: "Dismiss" | "Suspend") {
     const text =
       action === "Suspend"
-        ? `Sospendere ${report.reportedName}? Non potrà più accedere, uscirà dalle sue uscite future e le altre segnalazioni su di lui verranno chiuse.`
+        ? `Sospendere ${report.reportedName}? Non potrà più accedere, uscirà dalle uscite future e le altre segnalazioni su questa persona verranno chiuse.`
         : "Archiviare la segnalazione senza provvedimenti?";
     if (!confirm(text)) return;
     setBusy(true);

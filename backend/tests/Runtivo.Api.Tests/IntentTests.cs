@@ -31,6 +31,11 @@ public class IntentTests(ApiFixture api)
             ["allowPairs"] = true,
             ["confirmAdult"] = true,
         };
+        return Apply(body, overrides);
+    }
+
+    internal static Dictionary<string, object?> Apply(Dictionary<string, object?> body, object? overrides)
+    {
         if (overrides is not null)
             foreach (var p in overrides.GetType().GetProperties()) body[char.ToLowerInvariant(p.Name[0]) + p.Name[1..]] = p.GetValue(overrides);
         return body;

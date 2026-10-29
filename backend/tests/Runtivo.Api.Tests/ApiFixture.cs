@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Time.Testing;
+using Microsoft.EntityFrameworkCore;
 using Runtivo.Api.Common;
+using Runtivo.Api.Data;
 
 namespace Runtivo.Api.Tests;
 
@@ -66,6 +68,20 @@ public class ApiFixture : IDisposable
                 s.AddSingleton<TimeProvider>(Time);
             });
         });
+        ResetMatchingData(connectionString);
+    }
+
+    /// <summary>
+    /// Gli annunci sopravvivono tra un'esecuzione e l'altra e farebbero comparire "vecchi" candidati nei match.
+    /// Si svuotano all'avvio, ma solo se il database è chiaramente di test (il nome contiene "test").
+    /// </summary>
+    private void ResetMatchingData(string connectionString)
+    {
+        if (!connectionString.Contains("test", StringComparison.OrdinalIgnoreCase)) return;
+        using var scope = _factory!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<RuntivoDbContext>();
+        db.UserBlocks.ExecuteDelete();
+        db.RunIntents.ExecuteDelete();
     }
 
     public HttpClient NewClient(bool csrfHeader = true)

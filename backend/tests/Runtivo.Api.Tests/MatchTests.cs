@@ -15,13 +15,22 @@ public class MatchTests(ApiFixture api)
 
     private record Runner(HttpClient Client, string Email, Guid UserId);
 
+    // Ogni test usa una fascia oraria tutta sua (lunedì, mercoledì, venerdì, sabato, domenica): gli orari in comune
+    // sono un filtro obbligatorio, quindi i candidati di un test non compaiono mai negli elenchi degli altri.
+    private static readonly (string Day, string Band)[] Niches =
+        new[] { "Monday", "Wednesday", "Friday", "Saturday", "Sunday" }.SelectMany(d => new[] { "Morning", "Midday", "Evening" }.Select(b => (d, b))).ToArray();
+    private static int nicheCounter;
+    private readonly (string Day, string Band) niche = Niches[Interlocked.Increment(ref nicheCounter) % Niches.Length];
+
     private async Task<Guid> PlaceAsync(string name) =>
         (await IntentTests.PlacesAsync(api.NewClient())).First(p => p.Name == name).Id;
 
     private async Task<Runner> RunnerAsync(string place = "Piazza del Comune", object? overrides = null)
     {
         var (client, email, id) = await api.LoginAsync();
-        var response = await client.PutAsJsonAsync("/api/me/intent", IntentTests.ValidIntent(await PlaceAsync(place), overrides));
+        var body = IntentTests.ValidIntent(await PlaceAsync(place));
+        body["availability"] = new[] { new { day = niche.Day, band = niche.Band } };
+        var response = await client.PutAsJsonAsync("/api/me/intent", IntentTests.Apply(body, overrides));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         return new Runner(client, email, id);
     }
@@ -90,7 +99,7 @@ public class MatchTests(ApiFixture api)
         RequireDb();
         var a = await RunnerAsync();
         var slow = await RunnerAsync(overrides: new { PaceMinSecPerKm = 450, PaceMaxSecPerKm = 480 });
-        var otherDays = await RunnerAsync(overrides: new { Availability = new[] { new { day = "Saturday", band = "Morning" } } });
+        var otherDays = await RunnerAsync(overrides: new { Availability = new[] { new { day = "Thursday", band = "Morning" } } });
 
         var matches = await MatchesAsync(a.Client);
 

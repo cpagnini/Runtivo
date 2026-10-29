@@ -12,6 +12,7 @@ using Runtivo.Api.Events;
 using Runtivo.Api.Data;
 using Runtivo.Api.Domain;
 using Runtivo.Api.Health;
+using Runtivo.Api.Matching;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -134,6 +135,7 @@ app.MapAccountEndpoints();
 app.MapClubEndpoints();
 app.MapEventEndpoints();
 app.MapSeriesEndpoints();
+app.MapIntentEndpoints();
 
 app.Run();
 

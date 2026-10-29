@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { api, errorMessage, formatWhen, weekdayLabel, type Dashboard, type DashboardEvent, type SeriesSummary } from "@/lib/api";
+import { adesioni, api, errorMessage, formatWhen, weekdayLabel, type Dashboard, type DashboardEvent, type SeriesSummary } from "@/lib/api";
 import { useRequireLogin } from "@/components/Session";
 import { useLoad } from "@/lib/useLoad";
 import { Card, ErrorText, Loading } from "@/components/ui";
@@ -14,7 +14,7 @@ function EventRow({ event }: { event: DashboardEvent }) {
       <Link href={`/e/${event.id}`} className="card stack">
         <div className="row">
           <strong>{event.title}</strong>
-          {event.status === "Cancelled" ? <span className="badge">Annullata</span> : <span className="badge">{event.going} iscritti</span>}
+          {event.status === "Cancelled" ? <span className="badge">Annullata</span> : <span className="badge">{adesioni(event.going)}</span>}
         </div>
         <span>{formatWhen(event.startsAtUtc)}</span>
         {event.status === "Scheduled" && (
@@ -34,7 +34,7 @@ function SeriesRow({ series, onChange }: { series: SeriesSummary; onChange: () =
 
   async function stop(cancelFutureEvents: boolean) {
     const message = cancelFutureEvents
-      ? "Fermare la serie e annullare tutte le uscite future? Chi si è iscritto le vedrà annullate."
+      ? "Fermare la serie e annullare tutte le uscite future? Chi ha aderito le vedrà annullate."
       : "Fermare la serie? Le uscite già create restano in calendario.";
     if (!confirm(message)) return;
     setBusy(true);

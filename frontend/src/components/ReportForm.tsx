@@ -84,7 +84,7 @@ export function ReportForm({
       <label>
         Cosa è successo (facoltativo)
         <textarea rows={3} maxLength={500} value={details} onChange={(e) => setDetails(e.target.value)} />
-        <span className="hint">La persona segnalata non vedrà mai che sei stato tu. Le segnalazioni le legge solo chi modera la piattaforma.</span>
+        <span className="hint">La persona segnalata non vedrà mai che la segnalazione viene da te. Le segnalazioni le legge solo chi modera la piattaforma.</span>
       </label>
       <ErrorText>{error}</ErrorText>
       <div className="row wrap">

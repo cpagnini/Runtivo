@@ -547,6 +547,9 @@ namespace Runtivo.Api.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsCurated")
+                        .HasColumnType("boolean");
+
                     b.Property<double>("Latitude")
                         .HasColumnType("double precision");
 
@@ -560,7 +563,7 @@ namespace Runtivo.Api.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("City", "Name")
+                    b.HasIndex("City", "Name", "Latitude", "Longitude")
                         .IsUnique();
 
                     b.ToTable("PublicPlaces");
@@ -571,6 +574,7 @@ namespace Runtivo.Api.Data.Migrations
                             Id = new Guid("5f1c2a10-0000-4000-8000-000000000001"),
                             City = "Prato",
                             IsActive = true,
+                            IsCurated = true,
                             Latitude = 43.878999999999998,
                             Longitude = 11.096299999999999,
                             Name = "Piazza del Comune"
@@ -580,6 +584,7 @@ namespace Runtivo.Api.Data.Migrations
                             Id = new Guid("5f1c2a10-0000-4000-8000-000000000002"),
                             City = "Prato",
                             IsActive = true,
+                            IsCurated = true,
                             Latitude = 43.881,
                             Longitude = 11.099,
                             Name = "Piazza Mercatale"
@@ -589,6 +594,7 @@ namespace Runtivo.Api.Data.Migrations
                             Id = new Guid("5f1c2a10-0000-4000-8000-000000000003"),
                             City = "Firenze",
                             IsActive = true,
+                            IsCurated = true,
                             Latitude = 43.779499999999999,
                             Longitude = 11.215999999999999,
                             Name = "Parco delle Cascine"
@@ -598,6 +604,7 @@ namespace Runtivo.Api.Data.Migrations
                             Id = new Guid("5f1c2a10-0000-4000-8000-000000000004"),
                             City = "Firenze",
                             IsActive = true,
+                            IsCurated = true,
                             Latitude = 43.762900000000002,
                             Longitude = 11.265000000000001,
                             Name = "Piazzale Michelangelo"
@@ -607,6 +614,7 @@ namespace Runtivo.Api.Data.Migrations
                             Id = new Guid("5f1c2a10-0000-4000-8000-000000000005"),
                             City = "Firenze",
                             IsActive = true,
+                            IsCurated = true,
                             Latitude = 43.768700000000003,
                             Longitude = 11.262600000000001,
                             Name = "Piazza Santa Croce"
@@ -616,6 +624,7 @@ namespace Runtivo.Api.Data.Migrations
                             Id = new Guid("5f1c2a10-0000-4000-8000-000000000006"),
                             City = "Firenze",
                             IsActive = true,
+                            IsCurated = true,
                             Latitude = 43.780299999999997,
                             Longitude = 11.2432,
                             Name = "Fortezza da Basso"
@@ -651,6 +660,10 @@ namespace Runtivo.Api.Data.Migrations
 
                     b.Property<Guid>("HomePlaceId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<int>("PaceMaxSecPerKm")
                         .HasColumnType("integer");

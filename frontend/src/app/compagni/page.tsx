@@ -72,7 +72,7 @@ function Matches({ intent }: { intent: Intent }) {
       {data?.length === 0 && (
         <Card>
           <p>Per ora nessuno è compatibile con il tuo annuncio.</p>
-          <p className="muted">Prova ad allargare il raggio, a indicare più giorni o fasce orarie, oppure a invitare un amico a pubblicare il suo annuncio.</p>
+          <p className="muted">Prova ad allargare il raggio, a indicare più giorni o fasce orarie, oppure a far girare Runtivo tra chi conosci.</p>
         </Card>
       )}
       <ul className="list">
@@ -120,7 +120,8 @@ function Summary({ intent, onChanged, onEdit }: { intent: Intent; onChanged: () 
           Parti da {intent.homePlaceName} ({intent.city}), fino a {intent.radiusKm} km.
           {intent.allowPairs ? " Anche in coppia." : " Solo gruppi di 3 o più."}
         </p>
-        <p className="muted small">Libero: {intent.availability.map(slotLabel).join(", ")}</p>
+        <p className="muted small">Disponibilità: {intent.availability.map(slotLabel).join(", ")}</p>
+        {intent.note && <p className="quote">{intent.note}</p>}
         <p className="muted small">Scade il {new Date(intent.expiresAt).toLocaleDateString("it-IT")}.</p>
         <ErrorText>{error}</ErrorText>
         <div className="row wrap">
@@ -161,10 +162,10 @@ function CompanionsContent({ data, reload, needsName }: { data: Loaded; reload: 
 
   return (
     <div className="stack">
-      <h1>Cerco compagni di corsa</h1>
+      <h1>Trova compagnia per correre</h1>
       {!intent && (
         <p className="muted">
-          Dicci come corri e quando sei libero: ti mostriamo le persone più compatibili, vicino a te. Le uscite si fanno sempre in luoghi pubblici.
+          Dicci come corri e quando puoi: ti mostriamo le persone più compatibili, vicino a te. Le uscite si fanno sempre in luoghi pubblici.
         </p>
       )}
       {needsName && !intent && (

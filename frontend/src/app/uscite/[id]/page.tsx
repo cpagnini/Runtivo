@@ -109,7 +109,7 @@ function RunDetails({ run, myId, reload }: { run: Run; myId: string; reload: () 
   return (
     <div className="stack">
       <p className="muted small">
-        <Link href="/compagni">← Compagni</Link>
+        <Link href="/compagni">← Compagnia</Link>
       </p>
       <div className="row">
         <h1>Uscita spontanea</h1>

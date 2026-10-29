@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Runtivo — Trova il tuo passo. Corri insieme.",
-  description: "Organizza le uscite di corsa del tuo club con più gruppi di passo, senza sondaggi persi su WhatsApp.",
+  description: "Trova compagnia per correre vicino a te, al tuo ritmo, oppure organizza le uscite del tuo club con più gruppi di passo.",
   icons: { apple: "/apple-touch-icon.png" },
 };
 

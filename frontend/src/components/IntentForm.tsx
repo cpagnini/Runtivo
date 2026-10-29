@@ -12,6 +12,7 @@ import {
   runTypeLabel,
   slotLabel,
   weekdayLabel,
+  NOTE_MAX_LENGTH,
   type DayBand,
   type DayName,
   type Intent,
@@ -19,6 +20,7 @@ import {
   type RunType,
 } from "@/lib/api";
 import { ErrorText } from "./ui";
+import { PlaceSearch } from "./PlaceSearch";
 
 const key = (day: DayName, band: DayBand) => `${day}|${band}`;
 const kmText = (meters: number) => String(meters / 1000).replace(".", ",");
@@ -34,7 +36,10 @@ export function IntentForm({
   onSaved: (intent: Intent) => void;
   onCancel?: () => void;
 }) {
-  const [placeId, setPlaceId] = useState(initial?.homePlaceId ?? places[0]?.id ?? "");
+  const [place, setPlace] = useState<Place | null>(
+    initial ? { id: initial.homePlaceId, name: initial.homePlaceName, city: initial.city } : null,
+  );
+  const [note, setNote] = useState(initial?.note ?? "");
   const [radius, setRadius] = useState(initial?.radiusKm ?? 10);
   const [paceMin, setPaceMin] = useState(initial ? formatPace(initial.paceMinSecPerKm) : "");
   const [paceMax, setPaceMax] = useState(initial ? formatPace(initial.paceMaxSecPerKm) : "");
@@ -47,8 +52,6 @@ export function IntentForm({
   const [days, setDays] = useState(30);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const cities = [...new Set(places.map((p) => p.city))];
 
   const toggle = (day: DayName, band: DayBand) =>
     setSlots((prev) => {
@@ -69,14 +72,16 @@ export function IntentForm({
     const dMin = Number(kmMin.replace(",", "."));
     const dMax = Number(kmMax.replace(",", "."));
     if (!(dMin > 0) || !(dMax > 0)) return setError("Scrivi la distanza da e a in chilometri, ad esempio 8.");
-    if (slots.size === 0) return setError("Scegli almeno un giorno e una fascia oraria in cui sei libero.");
+    if (slots.size === 0) return setError("Scegli almeno un giorno e una fascia oraria in cui puoi correre.");
+    if (!place) return setError("Scegli da dove parti.");
 
     setBusy(true);
     try {
       const saved = await api<Intent>("/me/intent", {
         method: "PUT",
         body: {
-          homePlaceId: placeId,
+          homePlaceId: place.id,
+          note: note.trim() || null,
           radiusKm: radius,
           paceMinSecPerKm: pMin,
           paceMaxSecPerKm: pMax,
@@ -102,26 +107,10 @@ export function IntentForm({
 
   return (
     <form className="stack" onSubmit={submit}>
-      <label>
-        Da dove parti
-        <select value={placeId} onChange={(e) => setPlaceId(e.target.value)}>
-          {cities.map((city) => (
-            <optgroup key={city} label={city}>
-              {places
-                .filter((p) => p.city === city)
-                .map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-            </optgroup>
-          ))}
-        </select>
-        <span className="hint">Scegli un luogo pubblico vicino a te: non chiediamo mai il tuo indirizzo né la tua posizione.</span>
-      </label>
+      <PlaceSearch value={place} shortcuts={places} onChange={setPlace} />
 
       <label>
-        Fin dove sei disposto a spostarti: {radius} km
+        Quanto lontano puoi spostarti: {radius} km
         <input type="range" min={5} max={30} step={1} value={radius} onChange={(e) => setRadius(Number(e.target.value))} />
       </label>
 
@@ -156,7 +145,7 @@ export function IntentForm({
       </label>
 
       <fieldset className="slots">
-        <legend>Quando sei libero</legend>
+        <legend>Quando puoi correre</legend>
         <div className="slot-grid" role="group">
           <span />
           {bands.map((b) => (
@@ -170,9 +159,23 @@ export function IntentForm({
         </div>
       </fieldset>
 
+      <label>
+        Cosa cerchi <span className="hint">(facoltativo)</span>
+        <textarea
+          rows={3}
+          maxLength={NOTE_MAX_LENGTH}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Ad esempio: qualcuno con cui correre il martedì sera, senza fretta, chiacchierando."
+        />
+        <span className="hint">
+          Lo leggono le persone compatibili. Niente email, telefoni o link: i contatti ve li scambiate dopo. {note.length}/{NOTE_MAX_LENGTH}
+        </span>
+      </label>
+
       <label className="check">
         <input type="checkbox" checked={allowPairs} onChange={(e) => setAllowPairs(e.target.checked)} />
-        <span>Va bene anche correre in coppia, in un luogo pubblico. Se togli la spunta propongo solo uscite di gruppo (3 o più).</span>
+        <span>Va bene anche correre in coppia, in un luogo pubblico. Se togli la spunta ti proponiamo solo uscite di gruppo (3 o più persone).</span>
       </label>
 
       <label>
@@ -193,7 +196,7 @@ export function IntentForm({
 
       <ErrorText>{error}</ErrorText>
       <div className="row wrap">
-        <button className="button" disabled={busy || !placeId}>
+        <button className="button" disabled={busy || !place}>
           {busy ? "Salvataggio…" : initial ? "Salva l'annuncio" : "Pubblica l'annuncio"}
         </button>
         {onCancel && (

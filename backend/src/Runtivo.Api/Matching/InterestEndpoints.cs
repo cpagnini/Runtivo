@@ -41,7 +41,7 @@ public static class InterestEndpoints
                     await NewAccountLimits.LockAsync(db, "interest", me, ct);
                     var recent = await db.Interests.CountAsync(i => i.FromUserId == me && i.CreatedAt > now.AddHours(-24), ct);
                     if (recent >= NewAccountLimits.InterestsPerDay)
-                        return Http.Problem(429, $"Sei iscritto da poco: puoi mostrare interesse a {NewAccountLimits.InterestsPerDay} persone al giorno. Riprova domani.");
+                        return Http.Problem(429, $"Hai creato l'account da poco: puoi mostrare interesse a {NewAccountLimits.InterestsPerDay} persone al giorno. Riprova domani.");
                 }
                 db.Interests.Add(new Interest { FromUserId = me, ToUserId = toUserId, CreatedAt = now });
                 try
@@ -85,7 +85,7 @@ public static class InterestEndpoints
         var startsAt = RunSuggestions.NextSharedSlot(other.Score.SharedMask, now);
         if (startsAt is null) return null;
 
-        var places = await db.PublicPlaces.AsNoTracking().Where(x => x.IsActive).ToListAsync(ct);
+        var places = await db.PublicPlaces.AsNoTracking().Where(x => x.IsActive && x.IsCurated).ToListAsync(ct);
         var place = RunSuggestions.BestMeetingPlace(places, mine.Place, other.Place);
         var pace = RunSuggestions.Overlap(mine.Intent.PaceMinSecPerKm, mine.Intent.PaceMaxSecPerKm, other.Intent.PaceMinSecPerKm, other.Intent.PaceMaxSecPerKm);
         var distance = RunSuggestions.Overlap(mine.Intent.DistanceMinMeters, mine.Intent.DistanceMaxMeters, other.Intent.DistanceMinMeters, other.Intent.DistanceMaxMeters);

@@ -60,7 +60,7 @@ function ProposeForm({ matches, places, preselected }: { matches: Match[]; place
   return (
     <form className="stack" onSubmit={submit}>
       <p className="muted small">
-        <Link href="/compagni">← Compagni</Link>
+        <Link href="/compagni">← Compagnia</Link>
       </p>
       <h1>Proponi un&apos;uscita</h1>
       <p className="muted">Chi inviti dovrà confermare giorno, ora e luogo. L&apos;uscita è confermata solo quando hanno risposto tutti.</p>
@@ -129,7 +129,7 @@ function ProposePage() {
     return (
       <div className="stack">
         <ErrorText>{error ?? "Impossibile caricare la pagina."}</ErrorText>
-        <Link href="/compagni">Torna a Compagni</Link>
+        <Link href="/compagni">Torna a Compagnia</Link>
       </div>
     );
   return <ProposeForm matches={data.matches} places={data.places} preselected={preselected} />;

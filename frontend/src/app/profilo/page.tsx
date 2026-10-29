@@ -176,7 +176,7 @@ function PrivacySection({ user }: { user: User }) {
           <summary>Elimina il mio account</summary>
           <form className="stack delete-form" onSubmit={remove}>
             <p>
-              Verranno cancellati il tuo profilo, le iscrizioni ai club e alle uscite. Non si può annullare. Se sei l&apos;unico amministratore di un club con altri
+              Verranno cancellati il tuo profilo, le iscrizioni ai club e alle uscite. Non si può annullare. Se sei l&apos;unica persona che amministra un club con altri
               membri, assegna prima il ruolo a qualcun altro.
             </p>
             <label>

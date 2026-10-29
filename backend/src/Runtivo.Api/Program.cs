@@ -22,6 +22,13 @@ builder.Services.Configure<AppOptions>(builder.Configuration.GetSection("App"));
 builder.Services.Configure<PlatformOptions>(builder.Configuration.GetSection("Platform"));
 builder.Services.Configure<GoogleOptions>(builder.Configuration.GetSection("Auth:Google"));
 builder.Services.AddHttpClient<IGoogleClient, GoogleClient>();
+builder.Services.Configure<PhotonOptions>(builder.Configuration.GetSection("Places:Photon"));
+builder.Services.AddHttpClient<IPhotonClient, PhotonClient>(c =>
+{
+    c.Timeout = TimeSpan.FromSeconds(5);
+    // Il servizio pubblico di Photon chiede di dichiarare l'applicazione.
+    c.DefaultRequestHeaders.UserAgent.ParseAdd("Runtivo/0.1 (+https://github.com/cpagnini/Runtivo)");
+});
 var appOptions = builder.Configuration.GetSection("App").Get<AppOptions>() ?? new AppOptions();
 
 builder.Services.AddSingleton(TimeProvider.System);
@@ -82,6 +89,10 @@ builder.Services.AddRateLimiter(o =>
             ? RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                 _ => new FixedWindowRateLimiterOptions { PermitLimit = appOptions.ApiRequestsPerMinute, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 })
             : RateLimitPartition.GetNoLimiter("other"));
+    // La ricerca luoghi inoltra le richieste a un servizio esterno: tetto per persona (o per IP) più stretto del generale.
+    o.AddPolicy("search", ctx => RateLimitPartition.GetFixedWindowLimiter(
+        ctx.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 40, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     o.AddPolicy("auth", ctx => RateLimitPartition.GetFixedWindowLimiter(
         ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions
@@ -141,6 +152,7 @@ app.MapClubEndpoints();
 app.MapEventEndpoints();
 app.MapSeriesEndpoints();
 app.MapIntentEndpoints();
+app.MapPlaceSearchEndpoints();
 app.MapMatchEndpoints();
 app.MapInterestEndpoints();
 app.MapRunEndpoints();

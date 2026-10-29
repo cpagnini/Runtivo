@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
+  adesioni,
   api,
   errorMessage,
   formatDistance,
@@ -31,14 +32,14 @@ function GroupCard({
   onJoin: () => void;
 }) {
   const full = group.capacity != null && group.goingCount >= group.capacity;
-  const seats = group.capacity != null ? `${group.goingCount}/${group.capacity} posti` : `${group.goingCount} iscritti`;
+  const seats = group.capacity != null ? `${group.goingCount}/${group.capacity} posti` : adesioni(group.goingCount);
   const details = [formatDistance(group.distanceMeters), formatPaceRange(group.paceMinSecPerKm, group.paceMaxSecPerKm)].filter(Boolean);
 
   return (
     <li className={`card group-card${isMine ? " selected" : ""}`}>
       <div className="row">
         <strong>{group.name}</strong>
-        {isMine ? <span className="badge">Sei iscritto</span> : full ? <span className="badge">Completo</span> : null}
+        {isMine ? <span className="badge">Partecipi</span> : full ? <span className="badge">Completo</span> : null}
       </div>
       {details.length > 0 && <p>{details.join(" · ")}</p>}
       <p className="muted small">
@@ -186,7 +187,7 @@ export function EventView({ id }: { id: string }) {
           className="button danger"
           disabled={busy}
           onClick={() => {
-            if (confirm("Annullare questa uscita? Chi si è iscritto la vedrà come annullata.")) run(() => api(`/events/${id}/cancel`, { method: "POST" }));
+            if (confirm("Annullare questa uscita? Chi ha aderito la vedrà come annullata.")) run(() => api(`/events/${id}/cancel`, { method: "POST" }));
           }}
         >
           Annulla l&apos;uscita

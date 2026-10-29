@@ -52,7 +52,7 @@ export function MatchCard({ match, onChanged }: { match: Match; onChanged: () =>
 
   const block = () =>
     run(async () => {
-      if (!confirm(`Bloccare ${match.displayName}? Non vi vedrete più a vicenda e non verrà avvisato.`)) return;
+      if (!confirm(`Bloccare ${match.displayName}? Non vi vedrete più a vicenda e non riceverà alcun avviso.`)) return;
       await api(`/users/${match.userId}/block`, { method: "POST" });
       onChanged();
     });
@@ -62,16 +62,25 @@ export function MatchCard({ match, onChanged }: { match: Match; onChanged: () =>
   return (
     <li className="card stack">
       <div className="row">
-        <div>
-          <strong>{match.displayName}</strong>
-          <span className="muted small">
-            {" "}
-            · {match.city}, a circa {match.approxDistanceKm} km
+        <div className="person">
+          <span className="avatar" aria-hidden="true">
+            {match.displayName.trim().charAt(0).toUpperCase()}
           </span>
+          <div>
+            <strong>{match.displayName}</strong>
+            <br />
+            <span className="muted small">
+              {match.city}, a circa {match.approxDistanceKm} km
+            </span>
+          </div>
         </div>
-        <span className="badge" title={`Compatibilità ${match.score} su 100`}>
-          {scoreLabel(match.score)} · {match.score}
+        <span className="badge">{scoreLabel(match.score)}</span>
+      </div>
+      <div className="meter" role="img" aria-label={`Compatibilità ${match.score} su 100`}>
+        <span className="meter-bar">
+          <span style={{ width: `${match.score}%` }} />
         </span>
+        <span>{match.score}%</span>
       </div>
       <p className="small">
         {formatPaceRange(match.paceMinSecPerKm, match.paceMaxSecPerKm)} · {range(match.distanceMinMeters, match.distanceMaxMeters)} ·{" "}
@@ -83,6 +92,7 @@ export function MatchCard({ match, onChanged }: { match: Match; onChanged: () =>
           <li key={r}>{r}</li>
         ))}
       </ul>
+      {match.note && <p className="quote">{match.note}</p>}
       <p className="muted small">In comune: {match.sharedSlots.map(slotLabel).join(", ")}</p>
 
       <ErrorText>{error}</ErrorText>

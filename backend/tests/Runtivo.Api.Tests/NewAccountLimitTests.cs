@@ -38,7 +38,7 @@ public class NewAccountLimitTests(ApiFixture api) : IDisposable
 
         var sixth = await InterestTests.Interest(me.Client, others[5].UserId);
         Assert.Equal(HttpStatusCode.TooManyRequests, sixth.StatusCode);
-        Assert.Contains("iscritto da poco", await sixth.Content.ReadAsStringAsync());
+        Assert.Contains("account da poco", await sixth.Content.ReadAsStringAsync());
         // Ripetere un interesse già mostrato non conta come un nuovo interesse.
         Assert.Equal(HttpStatusCode.OK, (await InterestTests.Interest(me.Client, others[0].UserId)).StatusCode);
     }

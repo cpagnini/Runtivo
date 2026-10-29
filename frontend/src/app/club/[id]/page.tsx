@@ -3,7 +3,7 @@
 import { Suspense, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { api, errorMessage, formatWhen, roleLabel, type Club, type EventSummary, type Member, type Role } from "@/lib/api";
+import { adesioni, api, errorMessage, formatWhen, roleLabel, type Club, type EventSummary, type Member, type Role } from "@/lib/api";
 import { useSession } from "@/components/Session";
 import { useLoad } from "@/lib/useLoad";
 import { Card, ErrorText, Loading } from "@/components/ui";
@@ -184,7 +184,7 @@ function UpcomingEvents({ clubId, isAdmin }: { clubId: string; isAdmin: boolean 
               </div>
               <span>{formatWhen(e.startsAtUtc)}</span>
               <span className="muted small">
-                {e.meetingPointLabel} · {e.groupCount} {e.groupCount === 1 ? "gruppo" : "gruppi"} · {e.goingCount} iscritti
+                {e.meetingPointLabel} · {e.groupCount} {e.groupCount === 1 ? "gruppo" : "gruppi"} · {adesioni(e.goingCount)}
               </span>
             </Link>
           </li>

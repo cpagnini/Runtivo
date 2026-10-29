@@ -212,7 +212,7 @@ public static class ClubEndpoints
             var m = await db.Memberships.FirstOrDefaultAsync(x => x.ClubId == clubId && x.UserId == userId, ct);
             if (m is null || m.Status != MembershipStatus.Active) return Http.Problem(404, "Membro non trovato.");
             if (m.Role == ClubRole.Admin && dto.Role != ClubRole.Admin && await IsLastAdminAsync(db, clubId, ct))
-                return Http.Problem(409, "Il club deve avere almeno un amministratore.");
+                return Http.Problem(409, "Il club deve avere almeno una persona che lo amministra.");
 
             m.Role = dto.Role.Value;
             db.Audit(time, actor, "membership.role", "User", userId);
@@ -233,7 +233,7 @@ public static class ClubEndpoints
             var m = await db.Memberships.FirstOrDefaultAsync(x => x.ClubId == clubId && x.UserId == userId, ct);
             if (m is null) return Http.Problem(404, "Membro non trovato.");
             if (m.Role == ClubRole.Admin && m.Status == MembershipStatus.Active && await IsLastAdminAsync(db, clubId, ct))
-                return Http.Problem(409, "Il club deve avere almeno un amministratore.");
+                return Http.Problem(409, "Il club deve avere almeno una persona che lo amministra.");
 
             db.Memberships.Remove(m);
             db.Audit(time, actor, "membership.remove", "User", userId);

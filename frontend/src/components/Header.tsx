@@ -11,13 +11,13 @@ export function Header() {
   return (
     <header className="header">
       <Link href="/" className="brand">
-        runtivo.
+        runtivo<span className="dot">.</span>
       </Link>
       <nav className="nav" aria-label="Principale">
         {status === "authenticated" && user ? (
           <>
             <Link href="/le-mie-corse">Le mie corse</Link>
-            <Link href="/compagni">Compagni</Link>
+            <Link href="/compagni">Compagnia</Link>
             {user.isPlatformAdmin && <Link href="/admin">Moderazione</Link>}
             <Link href="/club">Club</Link>
             <Link href="/profilo">{user.displayName}</Link>

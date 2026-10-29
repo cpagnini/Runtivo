@@ -13,6 +13,8 @@ public class PublicPlace
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public bool IsActive { get; set; } = true;
+    /// <summary>Punto di ritrovo dell'elenco curato. Le zone create da una ricerca valgono solo come punto di partenza di un annuncio.</summary>
+    public bool IsCurated { get; set; } = true;
 }
 
 /// <summary>Annuncio di chi cerca compagni di corsa; uno solo per utente.</summary>
@@ -30,6 +32,8 @@ public class RunIntent
     /// <summary>Bit per fascia: vedi <see cref="Availability"/>.</summary>
     public int AvailabilityMask { get; set; }
     public bool AllowPairs { get; set; }
+    /// <summary>Frase libera di presentazione, mostrata alle persone compatibili: niente contatti (vedi <see cref="NoteRules"/>).</summary>
+    public string? Note { get; set; }
     public IntentStatus Status { get; set; } = IntentStatus.Active;
     public DateTimeOffset AdultConfirmedAt { get; set; }
     public DateTimeOffset ExpiresAt { get; set; }

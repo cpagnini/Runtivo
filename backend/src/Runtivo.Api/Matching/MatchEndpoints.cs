@@ -8,7 +8,7 @@ namespace Runtivo.Api.Matching;
 /// <summary>Scheda di una persona compatibile: mai coordinate, email o luogo esatto, solo la città e una distanza approssimata.</summary>
 public record MatchDto(Guid UserId, string DisplayName, string City, int Score, List<string> Reasons, int PaceMinSecPerKm, int PaceMaxSecPerKm,
     int DistanceMinMeters, int DistanceMaxMeters, RunType RunType, List<SlotDto> SharedSlots, int ApproxDistanceKm, bool CanMeetAsPair,
-    bool InterestSent, Guid? RunId);
+    bool InterestSent, Guid? RunId, string? Note);
 
 public static class MatchEndpoints
 {
@@ -38,7 +38,7 @@ public static class MatchEndpoints
                 c.Intent.PaceMinSecPerKm, c.Intent.PaceMaxSecPerKm, c.Intent.DistanceMinMeters, c.Intent.DistanceMaxMeters, c.Intent.RunType,
                 Availability.Slots(c.Score.SharedMask).Select(s => new SlotDto(s.Day, s.Band)).ToList(),
                 Math.Max(1, (int)Math.Round(c.DistanceKm)), mine.Intent.AllowPairs && c.Intent.AllowPairs,
-                sent.Contains(c.UserId), runs.TryGetValue(c.UserId, out var runId) ? runId : null)).ToList());
+                sent.Contains(c.UserId), runs.TryGetValue(c.UserId, out var runId) ? runId : null, c.Intent.Note)).ToList());
         }).RequireAuthorization();
 
         // Il blocco è reciproco e invisibile: l'altra persona non riceve alcun avviso, semplicemente non compare più.
@@ -46,7 +46,7 @@ public static class MatchEndpoints
         {
             var me = p.UserId();
             if (userId == me) return Http.Problem(400, "Non puoi bloccare te stesso.");
-            if (!await db.Users.AnyAsync(u => u.Id == userId, ct)) return Http.Problem(404, "Utente non trovato.");
+            if (!await db.Users.AnyAsync(u => u.Id == userId, ct)) return Http.Problem(404, "Persona non trovata.");
             if (!await db.UserBlocks.AnyAsync(b => b.BlockerId == me && b.BlockedId == userId, ct))
             {
                 db.UserBlocks.Add(new UserBlock { BlockerId = me, BlockedId = userId, CreatedAt = time.GetUtcNow() });

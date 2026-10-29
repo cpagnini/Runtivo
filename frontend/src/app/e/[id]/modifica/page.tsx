@@ -100,7 +100,7 @@ function EditPage() {
 
   if (!user || loading) return <Loading />;
   if (error || !data) return <ErrorText>{error ?? "Evento non trovato."}</ErrorText>;
-  if (data.myRole !== "Admin") return <ErrorText>Solo gli amministratori del club possono modificare l&apos;uscita.</ErrorText>;
+  if (data.myRole !== "Admin") return <ErrorText>Solo chi amministra il club può modificare l&apos;uscita.</ErrorText>;
   if (data.status === "Cancelled") return <ErrorText>L&apos;uscita è annullata e non si può modificare.</ErrorText>;
   return <EditForm event={data} />;
 }

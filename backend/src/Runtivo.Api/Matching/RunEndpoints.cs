@@ -30,12 +30,12 @@ public static class RunEndpoints
             var mine = await MatchService.LoadMineAsync(db, me, now, ct);
             if (mine is null) return Http.Problem(409, "Pubblica o riattiva il tuo annuncio per proporre un'uscita.");
 
-            if (dto.PlaceId is not { } placeId || !await db.PublicPlaces.AnyAsync(x => x.Id == placeId && x.IsActive, ct))
+            if (dto.PlaceId is not { } placeId || !await db.PublicPlaces.AnyAsync(x => x.Id == placeId && x.IsActive && x.IsCurated, ct))
                 return Http.Problem(400, "Scegli un luogo dall'elenco.");
             if (dto.StartsAt is not { } startsAt || startsAt < now + MinNotice) return Http.Problem(400, "L'uscita deve iniziare tra almeno un'ora.");
             if (startsAt > now + MaxAhead) return Http.Problem(400, "L'uscita può essere al massimo tra 60 giorni.");
             if (dto.InviteeIds is not { Count: >= 1 and <= MaxInvitees } invitees) return Http.Problem(400, $"Invita da 1 a {MaxInvitees} persone.");
-            if (invitees.Distinct().Count() != invitees.Count || invitees.Contains(me)) return Http.Problem(400, "L'elenco degli invitati non è valido.");
+            if (invitees.Distinct().Count() != invitees.Count || invitees.Contains(me)) return Http.Problem(400, "L'elenco delle persone invitate non è valido.");
             if ((dto.PaceMinSecPerKm is null) != (dto.PaceMaxSecPerKm is null)) return Http.Problem(400, "Indica il passo da e a, oppure nessuno dei due.");
             if (dto.PaceMinSecPerKm is { } lo && dto.PaceMaxSecPerKm is { } hi && (lo is < 120 or > 1200 || hi is < 120 or > 1200 || lo > hi))
                 return Http.Problem(400, "Il passo non è valido.");
@@ -49,7 +49,7 @@ public static class RunEndpoints
             var open = await db.SpontaneousRuns.CountAsync(r => r.CreatedByUserId == me && r.Status == RunStatus.Proposed && r.StartsAtUtc > now, ct);
             if (open >= maxOpen)
                 return Http.Problem(409, isNew
-                    ? "Sei iscritto da poco: puoi avere una sola proposta in attesa alla volta."
+                    ? "Hai creato l'account da poco: puoi avere una sola proposta in attesa alla volta."
                     : $"Hai già {MaxOpenProposals} proposte in attesa: aspetta le risposte prima di farne altre.");
 
             // Si invitano solo persone compatibili adesso: per ogni altro id la risposta è 404.

@@ -7,9 +7,10 @@ namespace Runtivo.Api.Matching;
 
 public record SlotDto(DayOfWeek Day, DayBand Band);
 public record IntentInputDto(Guid? HomePlaceId, int? RadiusKm, int? PaceMinSecPerKm, int? PaceMaxSecPerKm, int? DistanceMinMeters,
-    int? DistanceMaxMeters, RunType? RunType, List<SlotDto>? Availability, bool? AllowPairs, bool? ConfirmAdult, int? ExpiresInDays);
+    int? DistanceMaxMeters, RunType? RunType, List<SlotDto>? Availability, bool? AllowPairs, bool? ConfirmAdult, int? ExpiresInDays, string? Note = null);
 public record IntentDto(Guid Id, Guid HomePlaceId, string HomePlaceName, string City, int RadiusKm, int PaceMinSecPerKm, int PaceMaxSecPerKm,
-    int DistanceMinMeters, int DistanceMaxMeters, RunType RunType, List<SlotDto> Availability, bool AllowPairs, IntentStatus Status, DateTimeOffset ExpiresAt);
+    int DistanceMinMeters, int DistanceMaxMeters, RunType RunType, List<SlotDto> Availability, bool AllowPairs, IntentStatus Status, DateTimeOffset ExpiresAt,
+    string? Note);
 public record PlaceDto(Guid Id, string Name, string City);
 
 public static class IntentEndpoints
@@ -22,7 +23,7 @@ public static class IntentEndpoints
         // Elenco pubblico dei punti di ritrovo: senza coordinate, che restano interne al calcolo delle distanze.
         app.MapGet("/api/places", async (string? city, RuntivoDbContext db, CancellationToken ct) =>
         {
-            var query = db.PublicPlaces.AsNoTracking().Where(p => p.IsActive);
+            var query = db.PublicPlaces.AsNoTracking().Where(p => p.IsActive && p.IsCurated);
             if (!string.IsNullOrWhiteSpace(city)) query = query.Where(p => p.City == city.Trim());
             return Results.Ok(await query.OrderBy(p => p.City).ThenBy(p => p.Name).Select(p => new PlaceDto(p.Id, p.Name, p.City)).ToListAsync(ct));
         });
@@ -41,6 +42,8 @@ public static class IntentEndpoints
             var now = time.GetUtcNow();
 
             if (Validate(dto) is { } error) return Http.Problem(400, error);
+            var (note, noteError) = NoteRules.Check(dto.Note);
+            if (noteError is not null) return Http.Problem(400, noteError);
             if (!await db.PublicPlaces.AnyAsync(x => x.Id == dto.HomePlaceId && x.IsActive, ct)) return Http.Problem(400, "Scegli una zona dall'elenco.");
 
             // Il nome predefinito è la parte locale dell'email: mostrarlo agli altri rivelerebbe un dato personale.
@@ -66,6 +69,7 @@ public static class IntentEndpoints
             intent.RunType = dto.RunType!.Value;
             intent.AvailabilityMask = Availability.Mask(dto.Availability!.Select(s => (s.Day, s.Band)));
             intent.AllowPairs = dto.AllowPairs ?? true;
+            intent.Note = note;
             intent.Status = IntentStatus.Active;
             intent.ExpiresAt = now.AddDays(dto.ExpiresInDays ?? DefaultDays);
             intent.UpdatedAt = now;
@@ -120,7 +124,7 @@ public static class IntentEndpoints
         if (d.DistanceMinMeters is not (>= 1000 and <= 60000) || d.DistanceMaxMeters is not (>= 1000 and <= 60000)) return "La distanza deve essere tra 1 e 60 km.";
         if (d.DistanceMinMeters > d.DistanceMaxMeters) return "La distanza minima non può superare la massima.";
         if (d.RunType is not { } type || !Enum.IsDefined(type)) return "Scegli il tipo di corsa.";
-        if (d.Availability is not { Count: > 0 } slots) return "Indica almeno un giorno e una fascia oraria in cui sei libero.";
+        if (d.Availability is not { Count: > 0 } slots) return "Indica almeno un giorno e una fascia oraria in cui puoi correre.";
         if (slots.Any(s => !Enum.IsDefined(s.Day) || !Enum.IsDefined(s.Band))) return "Disponibilità non valida.";
         if (d.ExpiresInDays is { } days && days is < 1 or > MaxDays) return $"La scadenza può essere al massimo di {MaxDays} giorni.";
         return null;
@@ -136,6 +140,6 @@ public static class IntentEndpoints
         var i = row.Intent;
         return new IntentDto(i.Id, i.HomePlaceId, row.Name, row.City, i.RadiusKm, i.PaceMinSecPerKm, i.PaceMaxSecPerKm, i.DistanceMinMeters,
             i.DistanceMaxMeters, i.RunType, Availability.Slots(i.AvailabilityMask).Select(s => new SlotDto(s.Day, s.Band)).ToList(),
-            i.AllowPairs, i.Status, i.ExpiresAt);
+            i.AllowPairs, i.Status, i.ExpiresAt, i.Note);
     }
 }

@@ -73,7 +73,7 @@ export type Member = {
 export const roleLabel: Record<Role, string> = {
   Member: "Membro",
   Leader: "Capogruppo",
-  Admin: "Amministratore",
+  Admin: "Admin",
 };
 
 export function formatPace(sec: number | null): string {
@@ -221,6 +221,9 @@ export type Slot = { day: DayName; band: DayBand };
 
 export type Place = { id: string; name: string; city: string };
 
+/** Risultato della ricerca di un luogo: il riferimento firmato si scambia con un luogo vero (/places/resolve). */
+export type PlaceSuggestion = { ref: string; name: string; city: string };
+
 export type Intent = {
   id: string;
   homePlaceId: string;
@@ -236,6 +239,7 @@ export type Intent = {
   allowPairs: boolean;
   status: "Active" | "Paused";
   expiresAt: string;
+  note: string | null;
 };
 
 export type Match = {
@@ -254,7 +258,13 @@ export type Match = {
   canMeetAsPair: boolean;
   interestSent: boolean;
   runId: string | null;
+  note: string | null;
 };
+
+export const NOTE_MAX_LENGTH = 200;
+
+/** «1 adesione», «3 adesioni»: si evita il maschile generico («iscritti»). */
+export const adesioni = (n: number) => `${n} ${n === 1 ? "adesione" : "adesioni"}`;
 
 export const runTypeLabel: Record<RunType, string> = {
   Easy: "Tranquilla",

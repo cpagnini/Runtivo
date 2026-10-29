@@ -85,7 +85,7 @@ public static class AdminEndpoints
         admin.MapPost("/users/{userId:guid}/unsuspend", async (Guid userId, ClaimsPrincipal p, RuntivoDbContext db, TimeProvider time, CancellationToken ct) =>
         {
             var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
-            if (user is null) return Http.Problem(404, "Utente non trovato.");
+            if (user is null) return Http.Problem(404, "Persona non trovata.");
             if (user.Status == UserStatus.Suspended)
             {
                 user.Status = UserStatus.Active;
@@ -114,8 +114,8 @@ public static class AdminEndpoints
         var now = time.GetUtcNow();
         if (targetId == adminId) return Http.Problem(400, "Non puoi sospendere il tuo stesso account.");
         var user = await db.Users.FirstOrDefaultAsync(u => u.Id == targetId, ct);
-        if (user is null) return Http.Problem(404, "Utente non trovato.");
-        if (PlatformAdmin.IsAdminEmail(options, user.Email)) return Http.Problem(400, "Non si può sospendere un amministratore.");
+        if (user is null) return Http.Problem(404, "Persona non trovata.");
+        if (PlatformAdmin.IsAdminEmail(options, user.Email)) return Http.Problem(400, "Non si può sospendere chi amministra la piattaforma.");
 
         await using var tx = await db.Database.BeginTransactionAsync(ct);
         user.Status = UserStatus.Suspended;

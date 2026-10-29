@@ -137,7 +137,8 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
         {
             e.Property(x => x.Name).HasMaxLength(100);
             e.Property(x => x.City).HasMaxLength(60);
-            e.HasIndex(x => new { x.City, x.Name }).IsUnique();
+            // Con le coordinate arrotondate: due luoghi omonimi in punti diversi (es. «Parco») non si scontrano.
+            e.HasIndex(x => new { x.City, x.Name, x.Latitude, x.Longitude }).IsUnique();
             // Coordinate approssimate dei punti di ritrovo: da verificare prima del lancio pubblico.
             e.HasData(
                 Place("5f1c2a10-0000-4000-8000-000000000001", "Piazza del Comune", "Prato", 43.8790, 11.0963),
@@ -151,6 +152,7 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
         b.Entity<RunIntent>(e =>
         {
             e.HasIndex(x => x.UserId).IsUnique();
+            e.Property(x => x.Note).HasMaxLength(NoteRules.MaxLength);
             e.HasIndex(x => new { x.Status, x.ExpiresAt });
             e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne<PublicPlace>().WithMany().HasForeignKey(x => x.HomePlaceId).OnDelete(DeleteBehavior.Restrict);

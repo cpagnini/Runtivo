@@ -137,6 +137,8 @@ app.MapEventEndpoints();
 app.MapSeriesEndpoints();
 app.MapIntentEndpoints();
 app.MapMatchEndpoints();
+app.MapInterestEndpoints();
+app.MapRunEndpoints();
 
 app.Run();
 

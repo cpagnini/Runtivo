@@ -13,42 +13,18 @@ public class MatchTests(ApiFixture api)
 {
     private void RequireDb() => Skip.IfNot(api.Available, $"{ApiFixture.TestDbVariable} non impostata");
 
-    private record Runner(HttpClient Client, string Email, Guid UserId);
+    private readonly MatchHarness harness = new(api);
 
-    // Ogni test usa una fascia oraria tutta sua (lunedì, mercoledì, venerdì, sabato, domenica): gli orari in comune
-    // sono un filtro obbligatorio, quindi i candidati di un test non compaiono mai negli elenchi degli altri.
-    private static readonly (string Day, string Band)[] Niches =
-        new[] { "Monday", "Wednesday", "Friday", "Saturday", "Sunday" }.SelectMany(d => new[] { "Morning", "Midday", "Evening" }.Select(b => (d, b))).ToArray();
-    private static int nicheCounter;
-    private readonly (string Day, string Band) niche = Niches[Interlocked.Increment(ref nicheCounter) % Niches.Length];
-
-    private async Task<Guid> PlaceAsync(string name) =>
-        (await IntentTests.PlacesAsync(api.NewClient())).First(p => p.Name == name).Id;
-
-    private async Task<Runner> RunnerAsync(string place = "Piazza del Comune", object? overrides = null)
-    {
-        var (client, email, id) = await api.LoginNamedAsync();
-        var body = IntentTests.ValidIntent(await PlaceAsync(place));
-        body["availability"] = new[] { new { day = niche.Day, band = niche.Band } };
-        var response = await client.PutAsJsonAsync("/api/me/intent", IntentTests.Apply(body, overrides));
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        return new Runner(client, email, id);
-    }
-
-    private static async Task<List<JsonElement>> MatchesAsync(HttpClient c, string query = "")
-    {
-        var response = await c.GetAsync("/api/me/matches" + query);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        return (await response.Content.ReadFromJsonAsync<JsonElement>()).EnumerateArray().ToList();
-    }
-
-    private static bool Contains(IEnumerable<JsonElement> matches, Guid userId) => matches.Any(m => m.GetProperty("userId").GetGuid() == userId);
+    private Task<Guid> PlaceAsync(string name) => harness.PlaceAsync(name);
+    private Task<Runner> RunnerAsync(string? place = null, object? overrides = null) => harness.RunnerAsync(place, overrides);
+    private static Task<List<JsonElement>> MatchesAsync(HttpClient c, string query = "") => MatchHarness.MatchesAsync(c, query);
+    private static bool Contains(IEnumerable<JsonElement> matches, Guid userId) => MatchHarness.Contains(matches, userId);
 
     [SkippableFact]
     public async Task Compatible_people_see_each_other_with_reasons()
     {
         RequireDb();
-        var a = await RunnerAsync();
+        var a = await RunnerAsync("Piazza del Comune");
         var b = await RunnerAsync("Piazza Mercatale");
 
         var forA = await MatchesAsync(a.Client);

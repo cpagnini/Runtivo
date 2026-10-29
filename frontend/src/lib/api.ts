@@ -211,3 +211,64 @@ export function toLocalInput(iso: string): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
+
+export type RunType = "Easy" | "Training" | "Social";
+export type DayBand = "Morning" | "Midday" | "Evening";
+export type DayName = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
+
+export type Slot = { day: DayName; band: DayBand };
+
+export type Place = { id: string; name: string; city: string };
+
+export type Intent = {
+  id: string;
+  homePlaceId: string;
+  homePlaceName: string;
+  city: string;
+  radiusKm: number;
+  paceMinSecPerKm: number;
+  paceMaxSecPerKm: number;
+  distanceMinMeters: number;
+  distanceMaxMeters: number;
+  runType: RunType;
+  availability: Slot[];
+  allowPairs: boolean;
+  status: "Active" | "Paused";
+  expiresAt: string;
+};
+
+export type Match = {
+  userId: string;
+  displayName: string;
+  city: string;
+  score: number;
+  reasons: string[];
+  paceMinSecPerKm: number;
+  paceMaxSecPerKm: number;
+  distanceMinMeters: number;
+  distanceMaxMeters: number;
+  runType: RunType;
+  sharedSlots: Slot[];
+  approxDistanceKm: number;
+  canMeetAsPair: boolean;
+};
+
+export const runTypeLabel: Record<RunType, string> = {
+  Easy: "Tranquilla",
+  Training: "Allenamento",
+  Social: "In compagnia",
+};
+
+export const bandLabel: Record<DayBand, string> = { Morning: "mattina", Midday: "pausa pranzo", Evening: "sera" };
+
+/** Giorni in ordine italiano (si parte da lunedì). */
+export const daysInOrder: DayName[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+export const bands: DayBand[] = ["Morning", "Midday", "Evening"];
+
+export const slotLabel = (s: Slot) => `${(weekdayLabel[s.day] ?? s.day).toLowerCase()} ${bandLabel[s.band]}`;
+
+export function scoreLabel(score: number): string {
+  if (score >= 85) return "Ottima intesa";
+  if (score >= 70) return "Buona intesa";
+  return "Può funzionare";
+}

@@ -16,3 +16,12 @@ Ogni milestone è verticale e verificabile. Dettagli del prodotto in `CLAUDE.md`
 
 ## Anti-overbooking (M2)
 Transazione con `SELECT ... FOR UPDATE` sulla riga del gruppo di destinazione, conteggio e insert/update nella stessa transazione; cambio gruppo come singolo `UPDATE` dell'RSVP esistente, quindi mai senza prenotazione se fallisce. Errore di capienza → `409 Conflict` con dati aggiornati.
+
+## Milestone 5 — Uscite spontanee e match (design approvato)
+Design: `docs/superpowers/specs/2026-10-29-uscite-spontanee-e-match-design.md`.
+
+| M | Contenuto | Stato |
+|---|---|---|
+| 5a | Annuncio, luoghi pubblici, punteggio, elenco match, blocco minimo | fatta (decisione 0006) |
+| 5b | Interesse reciproco, uscita spontanea, conferma, coppie e gruppi | da fare |
+| 5c | Segnalazioni, ruolo admin piattaforma, condivisione uscita, limiti ai nuovi account | da fare |

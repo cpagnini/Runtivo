@@ -27,7 +27,7 @@ public class MatchTests(ApiFixture api)
 
     private async Task<Runner> RunnerAsync(string place = "Piazza del Comune", object? overrides = null)
     {
-        var (client, email, id) = await api.LoginAsync();
+        var (client, email, id) = await api.LoginNamedAsync();
         var body = IntentTests.ValidIntent(await PlaceAsync(place));
         body["availability"] = new[] { new { day = niche.Day, band = niche.Band } };
         var response = await client.PutAsJsonAsync("/api/me/intent", IntentTests.Apply(body, overrides));

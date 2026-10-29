@@ -17,6 +17,7 @@ export function Header() {
         {status === "authenticated" && user ? (
           <>
             <Link href="/le-mie-corse">Le mie corse</Link>
+            <Link href="/compagni">Compagni</Link>
             <Link href="/club">Club</Link>
             <Link href="/profilo">{user.displayName}</Link>
             <button

@@ -20,8 +20,8 @@ Verifica: `http://localhost:5044/health` e `/health/ready`; la home su `http://l
 ## Test
 ```bash
 dotnet test backend/Runtivo.sln
-# con database reale:
-RUNTIVO_TEST_DB="Host=localhost;Port=5432;Database=runtivo;Username=runtivo;Password=runtivo_dev" dotnet test backend/Runtivo.sln
+# con database reale (usa un database dedicato ai test, con "test" nel nome: all'avvio i test svuotano gli annunci):
+RUNTIVO_TEST_DB="Host=localhost;Port=5432;Database=runtivo_test;Username=runtivo;Password=runtivo_dev" dotnet test backend/Runtivo.sln
 cd frontend && npm run lint && npm run build
 ```
 

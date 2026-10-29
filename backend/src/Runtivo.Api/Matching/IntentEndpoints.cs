@@ -43,6 +43,11 @@ public static class IntentEndpoints
             if (Validate(dto) is { } error) return Http.Problem(400, error);
             if (!await db.PublicPlaces.AnyAsync(x => x.Id == dto.HomePlaceId && x.IsActive, ct)) return Http.Problem(400, "Scegli una zona dall'elenco.");
 
+            // Il nome predefinito è la parte locale dell'email: mostrarlo agli altri rivelerebbe un dato personale.
+            var user = await db.Users.AsNoTracking().Where(u => u.Id == userId).Select(u => new { u.Email, u.DisplayName }).FirstAsync(ct);
+            if (string.Equals(user.DisplayName, user.Email[..user.Email.IndexOf('@')], StringComparison.OrdinalIgnoreCase))
+                return Http.Problem(400, "Prima di pubblicare l'annuncio scegli il nome che vuoi mostrare agli altri, nel tuo profilo.");
+
             var intent = await db.RunIntents.FirstOrDefaultAsync(i => i.UserId == userId, ct);
             // La dichiarazione di maggiore età si chiede alla prima pubblicazione e non si azzera con le modifiche.
             if (intent is null && dto.ConfirmAdult != true) return Http.Problem(400, "Per pubblicare l'annuncio devi confermare di avere almeno 18 anni.");

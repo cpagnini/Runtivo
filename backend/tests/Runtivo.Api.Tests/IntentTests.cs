@@ -69,7 +69,7 @@ public class IntentTests(ApiFixture api)
     public async Task Publishing_requires_the_adult_confirmation()
     {
         RequireDb();
-        var (client, _, _) = await api.LoginAsync();
+        var (client, _, _) = await api.LoginNamedAsync();
         var place = (await PlacesAsync(client))[0].Id;
 
         Assert.Equal(HttpStatusCode.BadRequest, (await Put(client, ValidIntent(place, new { ConfirmAdult = false }))).StatusCode);
@@ -82,7 +82,7 @@ public class IntentTests(ApiFixture api)
     public async Task Invalid_input_is_rejected()
     {
         RequireDb();
-        var (client, _, _) = await api.LoginAsync();
+        var (client, _, _) = await api.LoginNamedAsync();
         var place = (await PlacesAsync(client))[0].Id;
 
         Assert.Equal(HttpStatusCode.BadRequest, (await Put(client, ValidIntent(place, new { RadiusKm = 4 }))).StatusCode);
@@ -101,7 +101,7 @@ public class IntentTests(ApiFixture api)
     public async Task Put_replaces_the_existing_intent()
     {
         RequireDb();
-        var (client, _, _) = await api.LoginAsync();
+        var (client, _, _) = await api.LoginNamedAsync();
         var place = (await PlacesAsync(client))[0].Id;
 
         await Put(client, ValidIntent(place));
@@ -118,7 +118,7 @@ public class IntentTests(ApiFixture api)
     public async Task Pause_and_resume_change_the_status()
     {
         RequireDb();
-        var (client, _, _) = await api.LoginAsync();
+        var (client, _, _) = await api.LoginNamedAsync();
         await Put(client, ValidIntent((await PlacesAsync(client))[0].Id));
 
         await client.PostAsync("/api/me/intent/pause", null);
@@ -132,7 +132,7 @@ public class IntentTests(ApiFixture api)
     public async Task Resume_of_an_expired_intent_extends_it()
     {
         RequireDb();
-        var (client, _, _) = await api.LoginAsync();
+        var (client, _, _) = await api.LoginNamedAsync();
         await Put(client, ValidIntent((await PlacesAsync(client))[0].Id, new { ExpiresInDays = 1 }));
         api.Time.Advance(TimeSpan.FromDays(3));
 
@@ -147,11 +147,26 @@ public class IntentTests(ApiFixture api)
     public async Task Delete_removes_the_intent()
     {
         RequireDb();
-        var (client, _, _) = await api.LoginAsync();
+        var (client, _, _) = await api.LoginNamedAsync();
         await Put(client, ValidIntent((await PlacesAsync(client))[0].Id));
 
         Assert.Equal(HttpStatusCode.NoContent, (await client.DeleteAsync("/api/me/intent")).StatusCode);
         Assert.Equal(HttpStatusCode.NoContent, (await client.DeleteAsync("/api/me/intent")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/api/me/intent")).StatusCode);
+    }
+
+    [SkippableFact]
+    public async Task Publishing_requires_a_chosen_display_name()
+    {
+        RequireDb();
+        var (client, _, _) = await api.LoginAsync(); // nome predefinito = parte locale dell'email
+        var place = (await PlacesAsync(client))[0].Id;
+
+        var refused = await Put(client, ValidIntent(place));
+        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+        Assert.Contains("nome", await refused.Content.ReadAsStringAsync());
+
+        await client.PatchAsJsonAsync("/api/me", new { displayName = "Giulia" });
+        Assert.Equal(HttpStatusCode.OK, (await Put(client, ValidIntent(place))).StatusCode);
     }
 }

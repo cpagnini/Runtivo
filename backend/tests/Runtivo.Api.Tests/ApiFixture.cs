@@ -108,6 +108,15 @@ public class ApiFixture : IDisposable
         return (client, email, user.GetProperty("id").GetGuid());
     }
 
+    /// <summary>Come <see cref="LoginAsync"/>, ma con un nome visibile scelto (serve per pubblicare un annuncio).</summary>
+    public async Task<(HttpClient Client, string Email, Guid UserId)> LoginNamedAsync(string? email = null)
+    {
+        var login = await LoginAsync(email);
+        var patched = await login.Client.PatchAsJsonAsync("/api/me", new { displayName = "Runner " + Guid.NewGuid().ToString("N")[..6] });
+        patched.EnsureSuccessStatusCode();
+        return login;
+    }
+
     public void Dispose() => _factory?.Dispose();
 }
 

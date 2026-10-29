@@ -20,6 +20,9 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
     public DbSet<PublicPlace> PublicPlaces => Set<PublicPlace>();
     public DbSet<RunIntent> RunIntents => Set<RunIntent>();
     public DbSet<UserBlock> UserBlocks => Set<UserBlock>();
+    public DbSet<Interest> Interests => Set<Interest>();
+    public DbSet<SpontaneousRun> SpontaneousRuns => Set<SpontaneousRun>();
+    public DbSet<RunParticipant> RunParticipants => Set<RunParticipant>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
@@ -162,6 +165,34 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
             e.HasOne<User>().WithMany().HasForeignKey(x => x.BlockerId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne<User>().WithMany().HasForeignKey(x => x.BlockedId).OnDelete(DeleteBehavior.Cascade);
             e.ToTable(t => t.HasCheckConstraint("CK_UserBlocks_NotSelf", "\"BlockerId\" <> \"BlockedId\""));
+        });
+
+        b.Entity<Interest>(e =>
+        {
+            e.HasKey(x => new { x.FromUserId, x.ToUserId });
+            e.HasIndex(x => x.ToUserId);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.FromUserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.ToUserId).OnDelete(DeleteBehavior.Cascade);
+            e.ToTable(t => t.HasCheckConstraint("CK_Interests_NotSelf", "\"FromUserId\" <> \"ToUserId\""));
+        });
+
+        b.Entity<SpontaneousRun>(e =>
+        {
+            e.Property(x => x.TimeZoneId).HasMaxLength(50);
+            e.Property(x => x.CancelReason).HasMaxLength(200);
+            e.HasIndex(x => new { x.Status, x.StartsAtUtc });
+            e.HasIndex(x => x.CreatedByUserId);
+            e.HasOne<PublicPlace>().WithMany().HasForeignKey(x => x.PlaceId).OnDelete(DeleteBehavior.Restrict);
+            e.ToTable(t => t.HasCheckConstraint("CK_SpontaneousRuns_Pace",
+                "(\"PaceMinSecPerKm\" IS NULL OR \"PaceMaxSecPerKm\" IS NULL OR \"PaceMinSecPerKm\" <= \"PaceMaxSecPerKm\")"));
+        });
+
+        b.Entity<RunParticipant>(e =>
+        {
+            e.HasKey(x => new { x.RunId, x.UserId });
+            e.HasIndex(x => x.UserId);
+            e.HasOne<SpontaneousRun>().WithMany().HasForeignKey(x => x.RunId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         b.Entity<AuditEntry>(e =>

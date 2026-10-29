@@ -480,6 +480,27 @@ namespace Runtivo.Api.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Runtivo.Api.Matching.Interest", b =>
+                {
+                    b.Property<Guid>("FromUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ToUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("FromUserId", "ToUserId");
+
+                    b.HasIndex("ToUserId");
+
+                    b.ToTable("Interests", t =>
+                        {
+                            t.HasCheckConstraint("CK_Interests_NotSelf", "\"FromUserId\" <> \"ToUserId\"");
+                        });
+                });
+
             modelBuilder.Entity("Runtivo.Api.Matching.PublicPlace", b =>
                 {
                     b.Property<Guid>("Id")
@@ -645,6 +666,87 @@ namespace Runtivo.Api.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Runtivo.Api.Matching.RunParticipant", b =>
+                {
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("RunId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RunParticipants");
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Matching.SpontaneousRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CancelReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("DistanceMeters")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PaceMaxSecPerKm")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PaceMinSecPerKm")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PlaceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("StartsAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("TimeZoneId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("PlaceId");
+
+                    b.HasIndex("Status", "StartsAtUtc");
+
+                    b.ToTable("SpontaneousRuns", t =>
+                        {
+                            t.HasCheckConstraint("CK_SpontaneousRuns_Pace", "(\"PaceMinSecPerKm\" IS NULL OR \"PaceMaxSecPerKm\" IS NULL OR \"PaceMinSecPerKm\" <= \"PaceMaxSecPerKm\")");
+                        });
+                });
+
             modelBuilder.Entity("Runtivo.Api.Matching.UserBlock", b =>
                 {
                     b.Property<Guid>("BlockerId")
@@ -753,6 +855,21 @@ namespace Runtivo.Api.Data.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 
+            modelBuilder.Entity("Runtivo.Api.Matching.Interest", b =>
+                {
+                    b.HasOne("Runtivo.Api.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("FromUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Runtivo.Api.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("ToUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Runtivo.Api.Matching.RunIntent", b =>
                 {
                     b.HasOne("Runtivo.Api.Matching.PublicPlace", null)
@@ -765,6 +882,30 @@ namespace Runtivo.Api.Data.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Matching.RunParticipant", b =>
+                {
+                    b.HasOne("Runtivo.Api.Matching.SpontaneousRun", null)
+                        .WithMany()
+                        .HasForeignKey("RunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Runtivo.Api.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Matching.SpontaneousRun", b =>
+                {
+                    b.HasOne("Runtivo.Api.Matching.PublicPlace", null)
+                        .WithMany()
+                        .HasForeignKey("PlaceId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

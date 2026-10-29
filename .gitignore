@@ -7,3 +7,17 @@ out/
 .env.local
 *.user
 .vs/
+
+# Segreti e dati locali: non vanno mai nel repository
+.env.*
+!.env.example
+*.pfx
+*.pem
+*.key
+secrets.json
+appsettings.Production.json
+appsettings.*.local.json
+*.sqlite
+*.db
+*.bak
+*.dump

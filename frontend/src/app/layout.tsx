@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   title: "Runtivo — Trova il tuo passo. Corri insieme.",
   description: "Trova compagnia per correre vicino a te, al tuo ritmo, oppure organizza le uscite del tuo club con più gruppi di passo.",
   icons: { apple: "/apple-touch-icon.png" },
+  authors: [{ name: "Claudio Pagnini" }],
+  creator: "Claudio Pagnini",
+  other: { copyright: "© 2026 Claudio Pagnini. Tutti i diritti riservati." },
 };
 
 export const viewport: Viewport = { themeColor: "#0f766e" };
@@ -34,6 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SessionProvider>
           <Header />
           <main id="contenuto" tabIndex={-1} className="page">{children}</main>
+          <footer className="site-footer">© 2026 Claudio Pagnini · Tutti i diritti riservati · runtivo.</footer>
         </SessionProvider>
       </body>
     </html>

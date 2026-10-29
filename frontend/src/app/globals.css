@@ -678,3 +678,12 @@ summary {
   background: linear-gradient(90deg, var(--brand-b), var(--hot));
   border-radius: inherit;
 }
+
+.site-footer {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 2.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted, #6b6b6b);
+}

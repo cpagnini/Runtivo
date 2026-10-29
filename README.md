@@ -32,3 +32,6 @@ cd frontend && npm run lint && npm run build
 - `backend/` API ASP.NET Core e test
 - `frontend/` Next.js (inoltra `/api/*` al backend, vedi `frontend/next.config.ts`)
 - `docs/decisions/` decision log
+
+## Diritti
+© 2026 Claudio Pagnini. Tutti i diritti riservati: il codice non è open source e non si può copiare né riusare senza autorizzazione scritta. Vedi [LICENSE](LICENSE). «Runtivo» e lo slogan sono nomi dell'autore; il marchio non è ancora registrato.

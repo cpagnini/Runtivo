@@ -46,7 +46,16 @@ public class ApiFixture : IDisposable
 
     private readonly WebApplicationFactory<Program>? _factory;
 
-    public ApiFixture()
+    public ApiFixture() : this(null) { }
+
+    /// <summary>Crea un'app separata con configurazione aggiuntiva (vedi il costruttore privato).</summary>
+    public static ApiFixture WithSettings(IDictionary<string, string> extraSettings) => new(extraSettings);
+
+    /// <summary>
+    /// Con <paramref name="extraSettings"/> crea un'app separata (stesso database, orologio e posta propri) con
+    /// configurazione aggiuntiva: serve ai test che devono cambiare opzioni come gli amministratori o i limiti.
+    /// </summary>
+    private ApiFixture(IDictionary<string, string>? extraSettings)
     {
         var connectionString = Environment.GetEnvironmentVariable(TestDbVariable);
         if (string.IsNullOrEmpty(connectionString)) return;
@@ -60,6 +69,8 @@ public class ApiFixture : IDisposable
             b.UseSetting("App:AuthRequestsPerMinute", "100000");
             b.UseSetting("App:ApiRequestsPerMinute", "1000000");
             b.UseSetting("Series:BackgroundGeneration", "false");
+            b.UseSetting("App:NewAccountDays", "0");
+            foreach (var (key, value) in extraSettings ?? new Dictionary<string, string>()) b.UseSetting(key, value);
             b.ConfigureServices(s =>
             {
                 s.RemoveAll<IEmailSender>();
@@ -68,7 +79,7 @@ public class ApiFixture : IDisposable
                 s.AddSingleton<TimeProvider>(Time);
             });
         });
-        ResetMatchingData(connectionString);
+        if (extraSettings is null) ResetMatchingData(connectionString);
     }
 
     /// <summary>

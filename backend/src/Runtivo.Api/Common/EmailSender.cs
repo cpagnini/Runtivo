@@ -6,6 +6,8 @@ public class AppOptions
     public bool RequireSecureCookie { get; set; } = true;
     public int AuthRequestsPerMinute { get; set; } = 20;
     public int ApiRequestsPerMinute { get; set; } = 300;
+    /// <summary>Per quanti giorni dalla registrazione valgono i limiti più stretti degli account nuovi (0 = disattivati).</summary>
+    public int NewAccountDays { get; set; } = 7;
     /// <summary>Attivare solo se il backend è dietro il proxy del frontend e non raggiungibile direttamente.</summary>
     public bool TrustForwardedHeaders { get; set; }
 }

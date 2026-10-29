@@ -6,20 +6,22 @@ using Microsoft.Extensions.Options;
 using Runtivo.Api.Common;
 using Runtivo.Api.Data;
 using Runtivo.Api.Domain;
+using Runtivo.Api.Safety;
 
 namespace Runtivo.Api.Auth;
 
 public record RequestLinkDto(string? Email);
 public record VerifyDto(string? Token);
 public record UpdateProfileDto(string? DisplayName, string? City, int? PreferredPaceSecPerKm, bool? ClearPreferredPace);
-public record UserDto(Guid Id, string Email, string DisplayName, string? City, int? PreferredPaceSecPerKm);
+public record UserDto(Guid Id, string Email, string DisplayName, string? City, int? PreferredPaceSecPerKm, bool IsPlatformAdmin);
 
 public static class AuthEndpoints
 {
     private static readonly TimeSpan LoginTokenLifetime = TimeSpan.FromMinutes(15);
     private const int MaxLinksPerEmailPerWindow = 3;
 
-    private static UserDto ToDto(User u) => new(u.Id, u.Email, u.DisplayName, u.City, u.PreferredPaceSecPerKm);
+    private static UserDto ToDto(User u, PlatformOptions platform) =>
+        new(u.Id, u.Email, u.DisplayName, u.City, u.PreferredPaceSecPerKm, PlatformAdmin.IsAdminEmail(platform, u.Email));
 
     public static void MapAuthEndpoints(this WebApplication app)
     {
@@ -51,7 +53,7 @@ public static class AuthEndpoints
 
         // POST (non GET): gli anteprima-link dei client di posta non consumano il token.
         auth.MapPost("/verify", async (VerifyDto dto, RuntivoDbContext db, HttpContext http,
-            TimeProvider time, CancellationToken ct) =>
+            TimeProvider time, IOptions<PlatformOptions> platform, CancellationToken ct) =>
         {
             const string invalid = "Link non valido o scaduto.";
             if (string.IsNullOrWhiteSpace(dto.Token)) return Http.Problem(400, invalid);
@@ -90,7 +92,7 @@ public static class AuthEndpoints
                 CookieAuthenticationDefaults.AuthenticationScheme);
             await http.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity),
                 new AuthenticationProperties { IsPersistent = true });
-            return Results.Ok(ToDto(user));
+            return Results.Ok(ToDto(user, platform.Value));
         }).RequireRateLimiting("auth");
 
         auth.MapPost("/logout", async (HttpContext http) =>
@@ -101,13 +103,13 @@ public static class AuthEndpoints
 
         var me = app.MapGroup("/api/me").RequireAuthorization();
 
-        me.MapGet("", async (ClaimsPrincipal p, RuntivoDbContext db, CancellationToken ct) =>
+        me.MapGet("", async (ClaimsPrincipal p, RuntivoDbContext db, IOptions<PlatformOptions> platform, CancellationToken ct) =>
         {
             var user = await db.Users.FindAsync([p.UserId()], ct);
-            return user is null ? Http.Problem(401, "Sessione non valida.") : Results.Ok(ToDto(user));
+            return user is null ? Http.Problem(401, "Sessione non valida.") : Results.Ok(ToDto(user, platform.Value));
         });
 
-        me.MapPatch("", async (UpdateProfileDto dto, ClaimsPrincipal p, RuntivoDbContext db, CancellationToken ct) =>
+        me.MapPatch("", async (UpdateProfileDto dto, ClaimsPrincipal p, RuntivoDbContext db, IOptions<PlatformOptions> platform, CancellationToken ct) =>
         {
             var user = await db.Users.FindAsync([p.UserId()], ct);
             if (user is null) return Http.Problem(401, "Sessione non valida.");
@@ -131,7 +133,7 @@ public static class AuthEndpoints
                 user.PreferredPaceSecPerKm = pace;
             }
             await db.SaveChangesAsync(ct);
-            return Results.Ok(ToDto(user));
+            return Results.Ok(ToDto(user, platform.Value));
         });
     }
 }

@@ -19,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.AddJsonConsole();
 builder.Services.Configure<AppOptions>(builder.Configuration.GetSection("App"));
+builder.Services.Configure<PlatformOptions>(builder.Configuration.GetSection("Platform"));
 var appOptions = builder.Configuration.GetSection("App").Get<AppOptions>() ?? new AppOptions();
 
 builder.Services.AddSingleton(TimeProvider.System);
@@ -141,6 +142,7 @@ app.MapMatchEndpoints();
 app.MapInterestEndpoints();
 app.MapRunEndpoints();
 app.MapReportEndpoints();
+app.MapAdminEndpoints();
 
 app.Run();
 

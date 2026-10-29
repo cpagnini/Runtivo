@@ -40,6 +40,7 @@ public class ApiFixture : IDisposable
     public CapturingEmailSender Mail { get; } = new();
     public FakeTimeProvider Time { get; } = new(DateTimeOffset.UtcNow);
     public bool Available { get; }
+    public IServiceProvider Services => _factory!.Services;
 
     private readonly WebApplicationFactory<Program>? _factory;
 

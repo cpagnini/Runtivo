@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Runtivo.Api.Common;
 using Runtivo.Api.Data;
 using Runtivo.Api.Domain;
+using Runtivo.Api.Matching;
 
 namespace Runtivo.Api.Auth;
 
@@ -66,6 +67,9 @@ public static class AccountEndpoints
             var audit = await db.AuditEntries.AsNoTracking().Where(a => a.ActorUserId == userId).OrderBy(a => a.Timestamp)
                 .Select(a => new { a.Action, a.TargetType, a.TargetId, a.Timestamp }).ToListAsync(ct);
 
+            var intent = await IntentEndpoints.LoadDtoAsync(db, userId, ct);
+            var blockedCount = await db.UserBlocks.CountAsync(b => b.BlockerId == userId, ct);
+
             http.Response.Headers.ContentDisposition = "attachment; filename=\"runtivo-i-miei-dati.json\"";
             return Results.Ok(new
             {
@@ -75,6 +79,8 @@ public static class AccountEndpoints
                     : new NotificationPrefsDto(prefs.EventChangesEmail, prefs.RemindersEmail, prefs.DiscoveryEmails),
                 Memberships = memberships,
                 Rsvps = rsvps,
+                Intent = intent,
+                BlockedUsers = blockedCount,
                 Activity = audit,
             });
         });

@@ -21,3 +21,15 @@ public class Report
     public Guid? ReviewedByUserId { get; set; }
     public string? ResolutionNote { get; set; }
 }
+
+/// <summary>Link per una persona di fiducia con cui si condivide un'uscita. Del token si salva solo l'hash.</summary>
+public class SafetyShare
+{
+    public Guid Id { get; set; }
+    public Guid RunId { get; set; }
+    public Guid UserId { get; set; }
+    public required string TokenHash { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset ExpiresAt { get; set; }
+    public DateTimeOffset? RevokedAt { get; set; }
+}

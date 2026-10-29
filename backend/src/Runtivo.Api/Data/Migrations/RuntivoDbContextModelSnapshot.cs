@@ -821,6 +821,44 @@ namespace Runtivo.Api.Data.Migrations
                     b.ToTable("Reports");
                 });
 
+            modelBuilder.Entity("Runtivo.Api.Safety.SafetyShare", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("RunId", "UserId");
+
+                    b.ToTable("SafetyShares");
+                });
+
             modelBuilder.Entity("Runtivo.Api.Domain.ClubInvitation", b =>
                 {
                     b.HasOne("Runtivo.Api.Domain.Club", null)
@@ -973,6 +1011,21 @@ namespace Runtivo.Api.Data.Migrations
                     b.HasOne("Runtivo.Api.Domain.User", null)
                         .WithMany()
                         .HasForeignKey("BlockerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Safety.SafetyShare", b =>
+                {
+                    b.HasOne("Runtivo.Api.Matching.SpontaneousRun", null)
+                        .WithMany()
+                        .HasForeignKey("RunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Runtivo.Api.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

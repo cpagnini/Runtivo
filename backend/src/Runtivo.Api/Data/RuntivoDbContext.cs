@@ -25,6 +25,7 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
     public DbSet<SpontaneousRun> SpontaneousRuns => Set<SpontaneousRun>();
     public DbSet<RunParticipant> RunParticipants => Set<RunParticipant>();
     public DbSet<Report> Reports => Set<Report>();
+    public DbSet<SafetyShare> SafetyShares => Set<SafetyShare>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
@@ -204,6 +205,15 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
             e.HasIndex(x => new { x.Status, x.CreatedAt });
             e.HasIndex(x => x.ReportedUserId);
             e.HasIndex(x => x.ReporterUserId);
+        });
+
+        b.Entity<SafetyShare>(e =>
+        {
+            e.Property(x => x.TokenHash).HasMaxLength(64);
+            e.HasIndex(x => x.TokenHash).IsUnique();
+            e.HasIndex(x => new { x.RunId, x.UserId });
+            e.HasOne<SpontaneousRun>().WithMany().HasForeignKey(x => x.RunId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         b.Entity<AuditEntry>(e =>

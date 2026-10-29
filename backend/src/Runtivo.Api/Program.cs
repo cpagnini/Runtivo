@@ -143,6 +143,7 @@ app.MapInterestEndpoints();
 app.MapRunEndpoints();
 app.MapReportEndpoints();
 app.MapAdminEndpoints();
+app.MapShareEndpoints();
 
 app.Run();
 

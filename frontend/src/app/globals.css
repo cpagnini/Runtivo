@@ -367,3 +367,8 @@ summary {
   color: var(--accent);
   font-weight: 700;
 }
+
+/* Le schede che sono anche una riga (nome a sinistra, azione a destra) restano affiancate. */
+.card.row {
+  display: flex;
+}

@@ -2,7 +2,21 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { api, ApiError, errorMessage, formatDistance, formatPaceRange, runTypeLabel, slotLabel, type Intent, type Match, type Place } from "@/lib/api";
+import {
+  api,
+  ApiError,
+  errorMessage,
+  formatDistance,
+  formatPaceRange,
+  formatWhen,
+  runStatusLabel,
+  runTypeLabel,
+  slotLabel,
+  type Intent,
+  type Match,
+  type Place,
+  type RunSummary,
+} from "@/lib/api";
 import { useRequireLogin } from "@/components/Session";
 import { useLoad } from "@/lib/useLoad";
 import { IntentForm } from "@/components/IntentForm";
@@ -21,6 +35,32 @@ async function loadIntentAndPlaces(): Promise<Loaded> {
   }
 }
 
+function MyRuns() {
+  const { data } = useLoad(() => api<RunSummary[]>("/me/runs"), "my-runs");
+  if (!data || data.length === 0) return null;
+
+  return (
+    <>
+      <h2>Le tue uscite</h2>
+      <ul className="list">
+        {data.map((r) => (
+          <li key={r.id}>
+            <Link href={`/uscite/${r.id}`} className="card stack">
+              <div className="row">
+                <strong>{formatWhen(r.startsAtUtc)}</strong>
+                <span className="badge">{r.myStatus === "Pending" ? "Aspetta la tua risposta" : runStatusLabel[r.status]}</span>
+              </div>
+              <span className="muted small">
+                {r.placeName}, {r.city} · {r.activeParticipants} {r.activeParticipants === 1 ? "persona" : "persone"}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 function Matches({ intent }: { intent: Intent }) {
   const { data, error, loading, reload } = useLoad(() => api<Match[]>("/me/matches?take=50"), `matches-${intent.status}-${intent.expiresAt}`);
 
@@ -37,7 +77,7 @@ function Matches({ intent }: { intent: Intent }) {
       )}
       <ul className="list">
         {data?.map((m) => (
-          <MatchCard key={m.userId} match={m} onBlocked={reload} />
+          <MatchCard key={m.userId} match={m} onChanged={reload} />
         ))}
       </ul>
     </>
@@ -145,6 +185,7 @@ function CompanionsContent({ data, reload, needsName }: { data: Loaded; reload: 
         />
       ) : (
         <>
+          <MyRuns />
           <Summary intent={intent} onChanged={reload} onEdit={() => setEditing(true)} />
           {visible ? <Matches intent={intent} /> : <p className="muted">Riattiva l&apos;annuncio per vedere le persone compatibili.</p>}
         </>

@@ -251,6 +251,8 @@ export type Match = {
   sharedSlots: Slot[];
   approxDistanceKm: number;
   canMeetAsPair: boolean;
+  interestSent: boolean;
+  runId: string | null;
 };
 
 export const runTypeLabel: Record<RunType, string> = {
@@ -272,3 +274,42 @@ export function scoreLabel(score: number): string {
   if (score >= 70) return "Buona intesa";
   return "Può funzionare";
 }
+
+export type RunStatus = "Proposed" | "Confirmed" | "Cancelled";
+export type ParticipantStatus = "Pending" | "Confirmed" | "Declined" | "Left";
+
+export type RunParticipant = { userId: string; displayName: string; status: ParticipantStatus };
+
+export type Run = {
+  id: string;
+  status: RunStatus;
+  cancelReason: string | null;
+  startsAtUtc: string;
+  timeZoneId: string;
+  place: Place;
+  distanceMeters: number | null;
+  paceMinSecPerKm: number | null;
+  paceMaxSecPerKm: number | null;
+  participants: RunParticipant[];
+  myStatus: ParticipantStatus;
+  isOrganizer: boolean;
+};
+
+export type RunSummary = {
+  id: string;
+  status: RunStatus;
+  startsAtUtc: string;
+  placeName: string;
+  city: string;
+  myStatus: ParticipantStatus;
+  activeParticipants: number;
+};
+
+export const runStatusLabel: Record<RunStatus, string> = { Proposed: "Da confermare", Confirmed: "Confermata", Cancelled: "Annullata" };
+
+export const participantStatusLabel: Record<ParticipantStatus, string> = {
+  Pending: "In attesa di risposta",
+  Confirmed: "Conferma",
+  Declined: "Ha rifiutato",
+  Left: "Ha lasciato",
+};

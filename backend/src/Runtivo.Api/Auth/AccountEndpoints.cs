@@ -7,6 +7,7 @@ using Runtivo.Api.Common;
 using Runtivo.Api.Data;
 using Runtivo.Api.Domain;
 using Runtivo.Api.Matching;
+using Runtivo.Api.Safety;
 
 namespace Runtivo.Api.Auth;
 
@@ -70,6 +71,8 @@ public static class AccountEndpoints
             var intent = await IntentEndpoints.LoadDtoAsync(db, userId, ct);
             var blockedCount = await db.UserBlocks.CountAsync(b => b.BlockerId == userId, ct);
             var interestsSent = await db.Interests.CountAsync(i => i.FromUserId == userId, ct);
+            var reportsFiled = await db.Reports.AsNoTracking().Where(r => r.ReporterUserId == userId).OrderBy(r => r.CreatedAt)
+                .Select(r => new { Reason = r.Reason.ToString(), Status = r.Status.ToString(), r.CreatedAt }).ToListAsync(ct);
             // Le mie uscite: dati dell'uscita e il mio stato, senza i nomi degli altri partecipanti.
             var runs = await (from part in db.RunParticipants
                               join run in db.SpontaneousRuns on part.RunId equals run.Id
@@ -90,6 +93,7 @@ public static class AccountEndpoints
                 Intent = intent,
                 BlockedUsers = blockedCount,
                 InterestsSent = interestsSent,
+                ReportsFiled = reportsFiled,
                 Runs = runs,
                 Activity = audit,
             });
@@ -132,6 +136,8 @@ public static class AccountEndpoints
             await db.Invitations.Where(i => i.CreatedByUserId == userId || i.InvitedEmail == user.Email).ExecuteDeleteAsync(ct);
             await db.LoginTokens.Where(t => t.Email == user.Email).ExecuteDeleteAsync(ct);
             await db.NotificationPreferences.Where(n => n.UserId == userId).ExecuteDeleteAsync(ct);
+            // Le segnalazioni fatte restano alla moderazione, ma senza più il collegamento alla persona che le ha fatte.
+            await db.Reports.Where(r => r.ReporterUserId == userId).ExecuteUpdateAsync(s => s.SetProperty(r => r.ReporterUserId, (Guid?)null), ct);
             // Il registro di audit resta, ma senza più il collegamento alla persona.
             await db.AuditEntries.Where(a => a.ActorUserId == userId).ExecuteUpdateAsync(s => s.SetProperty(a => a.ActorUserId, (Guid?)null), ct);
             await db.Users.Where(u => u.Id == userId).ExecuteDeleteAsync(ct); // iscrizioni e RSVP seguono a cascata

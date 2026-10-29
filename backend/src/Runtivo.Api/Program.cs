@@ -13,6 +13,7 @@ using Runtivo.Api.Data;
 using Runtivo.Api.Domain;
 using Runtivo.Api.Health;
 using Runtivo.Api.Matching;
+using Runtivo.Api.Safety;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -139,6 +140,7 @@ app.MapIntentEndpoints();
 app.MapMatchEndpoints();
 app.MapInterestEndpoints();
 app.MapRunEndpoints();
+app.MapReportEndpoints();
 
 app.Run();
 

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Runtivo.Api.Domain;
 using Runtivo.Api.Matching;
+using Runtivo.Api.Safety;
 
 namespace Runtivo.Api.Data;
 
@@ -23,6 +24,7 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
     public DbSet<Interest> Interests => Set<Interest>();
     public DbSet<SpontaneousRun> SpontaneousRuns => Set<SpontaneousRun>();
     public DbSet<RunParticipant> RunParticipants => Set<RunParticipant>();
+    public DbSet<Report> Reports => Set<Report>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
@@ -193,6 +195,15 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
             e.HasIndex(x => x.UserId);
             e.HasOne<SpontaneousRun>().WithMany().HasForeignKey(x => x.RunId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<Report>(e =>
+        {
+            e.Property(x => x.Details).HasMaxLength(500);
+            e.Property(x => x.ResolutionNote).HasMaxLength(500);
+            e.HasIndex(x => new { x.Status, x.CreatedAt });
+            e.HasIndex(x => x.ReportedUserId);
+            e.HasIndex(x => x.ReporterUserId);
         });
 
         b.Entity<AuditEntry>(e =>

@@ -480,6 +480,192 @@ namespace Runtivo.Api.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Runtivo.Api.Matching.PublicPlace", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("City", "Name")
+                        .IsUnique();
+
+                    b.ToTable("PublicPlaces");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("5f1c2a10-0000-4000-8000-000000000001"),
+                            City = "Prato",
+                            IsActive = true,
+                            Latitude = 43.878999999999998,
+                            Longitude = 11.096299999999999,
+                            Name = "Piazza del Comune"
+                        },
+                        new
+                        {
+                            Id = new Guid("5f1c2a10-0000-4000-8000-000000000002"),
+                            City = "Prato",
+                            IsActive = true,
+                            Latitude = 43.881,
+                            Longitude = 11.099,
+                            Name = "Piazza Mercatale"
+                        },
+                        new
+                        {
+                            Id = new Guid("5f1c2a10-0000-4000-8000-000000000003"),
+                            City = "Firenze",
+                            IsActive = true,
+                            Latitude = 43.779499999999999,
+                            Longitude = 11.215999999999999,
+                            Name = "Parco delle Cascine"
+                        },
+                        new
+                        {
+                            Id = new Guid("5f1c2a10-0000-4000-8000-000000000004"),
+                            City = "Firenze",
+                            IsActive = true,
+                            Latitude = 43.762900000000002,
+                            Longitude = 11.265000000000001,
+                            Name = "Piazzale Michelangelo"
+                        },
+                        new
+                        {
+                            Id = new Guid("5f1c2a10-0000-4000-8000-000000000005"),
+                            City = "Firenze",
+                            IsActive = true,
+                            Latitude = 43.768700000000003,
+                            Longitude = 11.262600000000001,
+                            Name = "Piazza Santa Croce"
+                        },
+                        new
+                        {
+                            Id = new Guid("5f1c2a10-0000-4000-8000-000000000006"),
+                            City = "Firenze",
+                            IsActive = true,
+                            Latitude = 43.780299999999997,
+                            Longitude = 11.2432,
+                            Name = "Fortezza da Basso"
+                        });
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Matching.RunIntent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("AdultConfirmedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("AllowPairs")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("AvailabilityMask")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DistanceMaxMeters")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DistanceMinMeters")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("HomePlaceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("PaceMaxSecPerKm")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PaceMinSecPerKm")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RadiusKm")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RunType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HomePlaceId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.HasIndex("Status", "ExpiresAt");
+
+                    b.ToTable("RunIntents", t =>
+                        {
+                            t.HasCheckConstraint("CK_RunIntents_Availability", "\"AvailabilityMask\" > 0");
+
+                            t.HasCheckConstraint("CK_RunIntents_Distance", "\"DistanceMinMeters\" >= 1000 AND \"DistanceMinMeters\" <= \"DistanceMaxMeters\" AND \"DistanceMaxMeters\" <= 60000");
+
+                            t.HasCheckConstraint("CK_RunIntents_Pace", "\"PaceMinSecPerKm\" BETWEEN 120 AND 1200 AND \"PaceMaxSecPerKm\" BETWEEN 120 AND 1200 AND \"PaceMinSecPerKm\" <= \"PaceMaxSecPerKm\"");
+
+                            t.HasCheckConstraint("CK_RunIntents_Radius", "\"RadiusKm\" BETWEEN 5 AND 30");
+                        });
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Matching.UserBlock", b =>
+                {
+                    b.Property<Guid>("BlockerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BlockedId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("BlockerId", "BlockedId");
+
+                    b.HasIndex("BlockedId");
+
+                    b.ToTable("UserBlocks", t =>
+                        {
+                            t.HasCheckConstraint("CK_UserBlocks_NotSelf", "\"BlockerId\" <> \"BlockedId\"");
+                        });
+                });
+
             modelBuilder.Entity("Runtivo.Api.Domain.ClubInvitation", b =>
                 {
                     b.HasOne("Runtivo.Api.Domain.Club", null)
@@ -565,6 +751,36 @@ namespace Runtivo.Api.Data.Migrations
                         .WithMany()
                         .HasForeignKey("SeriesId")
                         .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Matching.RunIntent", b =>
+                {
+                    b.HasOne("Runtivo.Api.Matching.PublicPlace", null)
+                        .WithMany()
+                        .HasForeignKey("HomePlaceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Runtivo.Api.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Matching.UserBlock", b =>
+                {
+                    b.HasOne("Runtivo.Api.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("BlockedId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Runtivo.Api.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("BlockerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Runtivo.Api.Domain.RunEvent", b =>

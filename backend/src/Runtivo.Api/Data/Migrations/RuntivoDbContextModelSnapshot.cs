@@ -22,6 +22,38 @@ namespace Runtivo.Api.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Runtivo.Api.Auth.ExternalLogin", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("Provider", "Subject")
+                        .IsUnique();
+
+                    b.ToTable("ExternalLogins");
+                });
+
             modelBuilder.Entity("Runtivo.Api.Domain.AuditEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -857,6 +889,15 @@ namespace Runtivo.Api.Data.Migrations
                     b.HasIndex("RunId", "UserId");
 
                     b.ToTable("SafetyShares");
+                });
+
+            modelBuilder.Entity("Runtivo.Api.Auth.ExternalLogin", b =>
+                {
+                    b.HasOne("Runtivo.Api.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Runtivo.Api.Domain.ClubInvitation", b =>

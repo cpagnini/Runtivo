@@ -20,6 +20,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddJsonConsole();
 builder.Services.Configure<AppOptions>(builder.Configuration.GetSection("App"));
 builder.Services.Configure<PlatformOptions>(builder.Configuration.GetSection("Platform"));
+builder.Services.Configure<GoogleOptions>(builder.Configuration.GetSection("Auth:Google"));
+builder.Services.AddHttpClient<IGoogleClient, GoogleClient>();
 var appOptions = builder.Configuration.GetSection("App").Get<AppOptions>() ?? new AppOptions();
 
 builder.Services.AddSingleton(TimeProvider.System);
@@ -133,6 +135,7 @@ app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false }
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c.Tags.Contains("ready") });
 
 app.MapAuthEndpoints();
+app.MapGoogleAuthEndpoints();
 app.MapAccountEndpoints();
 app.MapClubEndpoints();
 app.MapEventEndpoints();

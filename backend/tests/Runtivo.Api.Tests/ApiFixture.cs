@@ -46,16 +46,17 @@ public class ApiFixture : IDisposable
 
     private readonly WebApplicationFactory<Program>? _factory;
 
-    public ApiFixture() : this(null) { }
+    public ApiFixture() : this(null, null) { }
 
     /// <summary>Crea un'app separata con configurazione aggiuntiva (vedi il costruttore privato).</summary>
-    public static ApiFixture WithSettings(IDictionary<string, string> extraSettings) => new(extraSettings);
+    public static ApiFixture WithSettings(IDictionary<string, string> extraSettings, Action<IServiceCollection>? configureServices = null) =>
+        new(extraSettings, configureServices);
 
     /// <summary>
     /// Con <paramref name="extraSettings"/> crea un'app separata (stesso database, orologio e posta propri) con
     /// configurazione aggiuntiva: serve ai test che devono cambiare opzioni come gli amministratori o i limiti.
     /// </summary>
-    private ApiFixture(IDictionary<string, string>? extraSettings)
+    private ApiFixture(IDictionary<string, string>? extraSettings, Action<IServiceCollection>? configureServices)
     {
         var connectionString = Environment.GetEnvironmentVariable(TestDbVariable);
         if (string.IsNullOrEmpty(connectionString)) return;
@@ -77,6 +78,7 @@ public class ApiFixture : IDisposable
                 s.AddSingleton<IEmailSender>(Mail);
                 s.RemoveAll<TimeProvider>();
                 s.AddSingleton<TimeProvider>(Time);
+                configureServices?.Invoke(s);
             });
         });
         if (extraSettings is null) ResetMatchingData(connectionString);
@@ -96,9 +98,9 @@ public class ApiFixture : IDisposable
         db.Reports.ExecuteDelete();
     }
 
-    public HttpClient NewClient(bool csrfHeader = true)
+    public HttpClient NewClient(bool csrfHeader = true, bool followRedirects = true)
     {
-        var client = _factory!.CreateClient();
+        var client = _factory!.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = followRedirects });
         if (csrfHeader) client.DefaultRequestHeaders.Add("X-Requested-With", "runtivo");
         return client;
     }

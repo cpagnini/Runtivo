@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Runtivo.Api.Auth;
 using Runtivo.Api.Domain;
 using Runtivo.Api.Matching;
 using Runtivo.Api.Safety;
@@ -26,6 +27,7 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
     public DbSet<RunParticipant> RunParticipants => Set<RunParticipant>();
     public DbSet<Report> Reports => Set<Report>();
     public DbSet<SafetyShare> SafetyShares => Set<SafetyShare>();
+    public DbSet<ExternalLogin> ExternalLogins => Set<ExternalLogin>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
@@ -213,6 +215,15 @@ public class RuntivoDbContext(DbContextOptions<RuntivoDbContext> options) : DbCo
             e.HasIndex(x => x.TokenHash).IsUnique();
             e.HasIndex(x => new { x.RunId, x.UserId });
             e.HasOne<SpontaneousRun>().WithMany().HasForeignKey(x => x.RunId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<ExternalLogin>(e =>
+        {
+            e.Property(x => x.Provider).HasMaxLength(20);
+            e.Property(x => x.Subject).HasMaxLength(255);
+            e.HasIndex(x => new { x.Provider, x.Subject }).IsUnique();
+            e.HasIndex(x => x.UserId);
             e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 

@@ -18,6 +18,7 @@ export function Header() {
           <>
             <Link href="/le-mie-corse">Le mie corse</Link>
             <Link href="/compagni">Compagni</Link>
+            {user.isPlatformAdmin && <Link href="/admin">Moderazione</Link>}
             <Link href="/club">Club</Link>
             <Link href="/profilo">{user.displayName}</Link>
             <button

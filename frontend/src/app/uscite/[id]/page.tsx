@@ -16,12 +16,16 @@ import {
 import { useRequireLogin } from "@/components/Session";
 import { useLoad } from "@/lib/useLoad";
 import { Card, ErrorText, Loading } from "@/components/ui";
+import { ReportForm } from "@/components/ReportForm";
 
 function RunDetails({ run, myId, reload }: { run: Run; myId: string; reload: () => void }) {
   // Letto qui, dove il componente esiste solo dopo il caricamento: durante il pre-rendering non c'è un "adesso".
   const [now] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reportingId, setReportingId] = useState<string | null>(null);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const started = new Date(run.startsAtUtc).getTime() <= now;
   const open = run.status !== "Cancelled" && !started;
@@ -52,6 +56,53 @@ function RunDetails({ run, myId, reload }: { run: Run; myId: string; reload: () 
     } finally {
       setBusy(false);
       reload();
+    }
+  }
+
+  async function createShare() {
+    setBusy(true);
+    setError(null);
+    setCopied(false);
+    try {
+      const result = await api<{ link: string; expiresAt: string }>(`/runs/${run.id}/share`, { method: "POST" });
+      setShareLink(result.link);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function revokeShares() {
+    if (!confirm("Revocare tutti i link che hai creato per questa uscita? Chi li ha non potrà più aprirli.")) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await api(`/runs/${run.id}/share`, { method: "DELETE" });
+      setShareLink(null);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function copyLink() {
+    if (!shareLink) return;
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      setCopied(true);
+    } catch {
+      setError("Copia non riuscita: seleziona il link e copialo a mano.");
+    }
+  }
+
+  async function shareLinkNatively() {
+    if (!shareLink) return;
+    try {
+      await navigator.share({ title: "Dove corro", text: "Ti mando i dettagli della mia uscita di corsa.", url: shareLink });
+    } catch {
+      // Condivisione annullata dall'utente: nessun messaggio.
     }
   }
 
@@ -89,18 +140,28 @@ function RunDetails({ run, myId, reload }: { run: Run; myId: string; reload: () 
       <h2>Chi corre</h2>
       <ul className="list">
         {run.participants.map((p) => (
-          <li key={p.userId} className="card row">
-            <span>
-              <strong>{p.displayName}</strong>
-              {p.status === "Declined" || p.status === "Left" ? <span className="muted"> · {participantStatusLabel[p.status]}</span> : null}
-              {p.status === "Pending" && <span className="muted small"> · {participantStatusLabel.Pending}</span>}
-              {p.status === "Confirmed" && <span className="badge"> Conferma</span>}
-            </span>
-            {open && p.userId !== myId && (p.status === "Pending" || p.status === "Confirmed") && (
-              <button className="link-button small" onClick={() => block(p.userId, p.displayName)} disabled={busy}>
-                Blocca
-              </button>
-            )}
+          <li key={p.userId} className="card stack">
+            <div className="row">
+              <span>
+                <strong>{p.displayName}</strong>
+                {p.status === "Declined" || p.status === "Left" ? <span className="muted"> · {participantStatusLabel[p.status]}</span> : null}
+                {p.status === "Pending" && <span className="muted small"> · {participantStatusLabel.Pending}</span>}
+                {p.status === "Confirmed" && <span className="badge"> Conferma</span>}
+              </span>
+              {p.userId !== myId && (p.status === "Pending" || p.status === "Confirmed") && (
+                <span className="row">
+                  <button className="link-button small" onClick={() => setReportingId(reportingId === p.userId ? null : p.userId)} disabled={busy}>
+                    Segnala
+                  </button>
+                  {open && (
+                    <button className="link-button small" onClick={() => block(p.userId, p.displayName)} disabled={busy}>
+                      Blocca
+                    </button>
+                  )}
+                </span>
+              )}
+            </div>
+            {reportingId === p.userId && <ReportForm userId={p.userId} name={p.displayName} runId={run.id} onClose={() => setReportingId(null)} onBlocked={reload} />}
           </li>
         ))}
       </ul>
@@ -126,6 +187,40 @@ function RunDetails({ run, myId, reload }: { run: Run; myId: string; reload: () 
         <button className="button danger" disabled={busy} onClick={() => act("cancel", "Annullare l'uscita per tutti?")}>
           Annulla l&apos;uscita
         </button>
+      )}
+
+      {open && (run.myStatus === "Pending" || run.myStatus === "Confirmed") && (
+        <Card>
+          <div className="stack">
+            <h2>Fai sapere a qualcuno che esci</h2>
+            <p className="muted small">
+              Crea un link da mandare a una persona di fiducia: vedrà giorno, ora, luogo e con chi corri, fino a 6 ore dopo l&apos;inizio. Puoi revocarlo quando vuoi.
+            </p>
+            {shareLink && (
+              <>
+                <input readOnly value={shareLink} onFocus={(e) => e.currentTarget.select()} aria-label="Link da condividere" />
+                <div className="row wrap">
+                  <button className="button secondary small" onClick={copyLink}>
+                    {copied ? "Copiato" : "Copia il link"}
+                  </button>
+                  {typeof navigator !== "undefined" && "share" in navigator && (
+                    <button className="button secondary small" onClick={shareLinkNatively}>
+                      Condividi
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+            <div className="row wrap">
+              <button className="button small" onClick={createShare} disabled={busy}>
+                {shareLink ? "Crea un altro link" : "Crea un link"}
+              </button>
+              <button className="link-button small" onClick={revokeShares} disabled={busy}>
+                Revoca i miei link
+              </button>
+            </div>
+          </div>
+        </Card>
       )}
 
       <Card>

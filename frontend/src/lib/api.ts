@@ -45,6 +45,7 @@ export type User = {
   displayName: string;
   city: string | null;
   preferredPaceSecPerKm: number | null;
+  isPlatformAdmin: boolean;
 };
 
 export type Role = "Member" | "Leader" | "Admin";
@@ -312,4 +313,39 @@ export const participantStatusLabel: Record<ParticipantStatus, string> = {
   Confirmed: "Conferma",
   Declined: "Ha rifiutato",
   Left: "Ha lasciato",
+};
+
+export type ReportReason = "Harassment" | "FakeProfile" | "Unsafe" | "Spam" | "Other";
+
+export const reportReasonLabel: Record<ReportReason, string> = {
+  Harassment: "Molestie o comportamento scorretto",
+  FakeProfile: "Profilo falso",
+  Unsafe: "Una situazione che mi ha messo a disagio o in pericolo",
+  Spam: "Spam o pubblicità",
+  Other: "Altro",
+};
+
+export type SafetyView = {
+  sharedBy: string;
+  startsAtUtc: string;
+  timeZoneId: string;
+  placeName: string;
+  city: string;
+  status: RunStatus;
+  participants: string[];
+  expiresAt: string;
+};
+
+export type AdminReport = {
+  id: string;
+  reason: ReportReason;
+  details: string | null;
+  status: "Open" | "Dismissed" | "ActionTaken";
+  createdAt: string;
+  reportedUserId: string;
+  reportedName: string;
+  reportedStatus: "Active" | "Suspended" | null;
+  reporterName: string | null;
+  openReportsAgainstTarget: number;
+  runId: string | null;
 };

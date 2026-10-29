@@ -24,4 +24,4 @@ Design: `docs/superpowers/specs/2026-10-29-uscite-spontanee-e-match-design.md`.
 |---|---|---|
 | 5a | Annuncio, luoghi pubblici, punteggio, elenco match, blocco minimo | fatta (decisione 0006) |
 | 5b | Interesse reciproco, uscita spontanea, conferma, coppie e gruppi | fatta (decisione 0007) |
-| 5c | Segnalazioni, ruolo admin piattaforma, condivisione uscita, limiti ai nuovi account | da fare |
+| 5c | Segnalazioni, ruolo admin piattaforma, condivisione uscita, limiti ai nuovi account | fatta (decisione 0008) |

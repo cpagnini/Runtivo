@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api, errorMessage, formatDistance, formatPaceRange, runTypeLabel, scoreLabel, slotLabel, type Match } from "@/lib/api";
 import { ErrorText } from "./ui";
+import { ReportForm } from "./ReportForm";
 
 type InterestResult = { mutual: boolean; runId: string | null };
 
@@ -13,6 +14,7 @@ export function MatchCard({ match, onChanged }: { match: Match; onChanged: () =>
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [reporting, setReporting] = useState(false);
 
   async function run(action: () => Promise<void>) {
     setBusy(true);
@@ -106,10 +108,14 @@ export function MatchCard({ match, onChanged }: { match: Match; onChanged: () =>
         <Link className="button secondary small" href={`/compagni/proponi?con=${match.userId}`}>
           Proponi un&apos;uscita
         </Link>
+        <button className="button secondary small" onClick={() => setReporting((v) => !v)} disabled={busy}>
+          Segnala
+        </button>
         <button className="button danger small" onClick={block} disabled={busy}>
           Blocca
         </button>
       </div>
+      {reporting && <ReportForm userId={match.userId} name={match.displayName} onClose={() => setReporting(false)} onBlocked={onChanged} />}
       {!match.canMeetAsPair && !match.runId && (
         <p className="muted small">Una di voi due preferisce le uscite di gruppo: per correre insieme proponi un&apos;uscita con almeno un&apos;altra persona.</p>
       )}

@@ -42,7 +42,7 @@ function LoginForm() {
       // Ricordiamo la destinazione, così dopo l'accesso si torna dove si era.
       // Il link si apre spesso in un'altra scheda: localStorage, non sessionStorage.
       try {
-        if (next !== "/club") localStorage.setItem("runtivo.next", next);
+        if (next !== "/") localStorage.setItem("runtivo.next", next);
       } catch {}
       setSent(true);
     } catch (err) {

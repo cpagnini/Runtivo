@@ -90,7 +90,7 @@ export function parsePace(text: string): number | null | undefined {
 }
 
 /** Accetta solo percorsi interni, per evitare redirect verso altri siti. */
-export const safeNext = (value: string | null) => (value && /^\/(?!\/)/.test(value) ? value : "/club");
+export const safeNext = (value: string | null) => (value && /^\/(?!\/)/.test(value) ? value : "/");
 
 export type Visibility = "Public" | "ClubOnly";
 

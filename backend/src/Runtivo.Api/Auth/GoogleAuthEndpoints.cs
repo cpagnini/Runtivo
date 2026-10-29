@@ -139,7 +139,7 @@ public static class GoogleAuthEndpoints
 
     /// <summary>Solo percorsi interni del sito: niente indirizzi assoluti né "//" (redirect verso altri siti).</summary>
     private static string SafeNext(string? next) =>
-        next is { Length: > 0 } && next[0] == '/' && !next.StartsWith("//", StringComparison.Ordinal) && !next.Contains('\\') ? next : "/club";
+        next is { Length: > 0 } && next[0] == '/' && !next.StartsWith("//", StringComparison.Ordinal) && !next.Contains('\\') ? next : "/";
 
     private static string Challenge(string verifier) =>
         Convert.ToBase64String(SHA256.HashData(Encoding.ASCII.GetBytes(verifier))).TrimEnd('=').Replace('+', '-').Replace('/', '_');

@@ -137,7 +137,7 @@ public class GoogleAuthTests : IDisposable
         var response = await LoginAsync(client, nonce => Identity(email, nonce: nonce));
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        Assert.Equal("/club", Target(response));
+        Assert.Equal("/", Target(response));
         var me = await (await client.GetAsync("/api/me")).Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal(email, me.GetProperty("email").GetString());
         // Il nome non si importa da Google: resta quello predefinito, da scegliere nel profilo.
@@ -220,7 +220,7 @@ public class GoogleAuthTests : IDisposable
         var first = await client.GetAsync($"/api/auth/google/callback?code=c&state={Uri.EscapeDataString(state)}");
         var second = await client.GetAsync($"/api/auth/google/callback?code=c&state={Uri.EscapeDataString(state)}");
 
-        Assert.Equal("/club", Target(first));
+        Assert.Equal("/", Target(first));
         Assert.Equal("/accedi?errore=sessione", Target(second));
     }
 
@@ -254,9 +254,9 @@ public class GoogleAuthTests : IDisposable
     }
 
     [SkippableTheory]
-    [InlineData("//evil.example", "/club")]
-    [InlineData("https://evil.example/x", "/club")]
-    [InlineData("/\\evil.example", "/club")]
+    [InlineData("//evil.example", "/")]
+    [InlineData("https://evil.example/x", "/")]
+    [InlineData("/\\evil.example", "/")]
     [InlineData("/club/abc?x=1", "/club/abc?x=1")]
     public async Task The_return_path_cannot_point_to_other_sites(string next, string expected)
     {

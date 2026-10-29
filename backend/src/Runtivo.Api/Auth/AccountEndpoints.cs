@@ -69,6 +69,14 @@ public static class AccountEndpoints
 
             var intent = await IntentEndpoints.LoadDtoAsync(db, userId, ct);
             var blockedCount = await db.UserBlocks.CountAsync(b => b.BlockerId == userId, ct);
+            var interestsSent = await db.Interests.CountAsync(i => i.FromUserId == userId, ct);
+            // Le mie uscite: dati dell'uscita e il mio stato, senza i nomi degli altri partecipanti.
+            var runs = await (from part in db.RunParticipants
+                              join run in db.SpontaneousRuns on part.RunId equals run.Id
+                              join pl in db.PublicPlaces on run.PlaceId equals pl.Id
+                              where part.UserId == userId
+                              orderby run.StartsAtUtc
+                              select new { run.StartsAtUtc, Place = pl.Name, pl.City, RunStatus = run.Status.ToString(), MyStatus = part.Status.ToString() }).ToListAsync(ct);
 
             http.Response.Headers.ContentDisposition = "attachment; filename=\"runtivo-i-miei-dati.json\"";
             return Results.Ok(new
@@ -81,6 +89,8 @@ public static class AccountEndpoints
                 Rsvps = rsvps,
                 Intent = intent,
                 BlockedUsers = blockedCount,
+                InterestsSent = interestsSent,
+                Runs = runs,
                 Activity = audit,
             });
         });
@@ -115,6 +125,8 @@ public static class AccountEndpoints
                 clubsToDelete.Add(club.Id);
             }
 
+            // Prima di sparire si esce dalle uscite future: restano valide solo se rimangono abbastanza persone.
+            await RunMembership.LeaveFutureRunsAsync(db, userId, null, time.GetUtcNow(), ct);
             if (clubsToDelete.Count > 0) await db.Clubs.Where(c => clubsToDelete.Contains(c.Id)).ExecuteDeleteAsync(ct);
             await db.PaceGroups.Where(g => g.LeaderUserId == userId).ExecuteUpdateAsync(s => s.SetProperty(g => g.LeaderUserId, (Guid?)null), ct);
             await db.Invitations.Where(i => i.CreatedByUserId == userId || i.InvitedEmail == user.Email).ExecuteDeleteAsync(ct);

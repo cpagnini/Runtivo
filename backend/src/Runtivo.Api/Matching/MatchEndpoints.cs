@@ -52,8 +52,10 @@ public static class MatchEndpoints
                 db.UserBlocks.Add(new UserBlock { BlockerId = me, BlockedId = userId, CreatedAt = time.GetUtcNow() });
                 db.Audit(time, me, "user.block", "User", userId);
                 try { await db.SaveChangesAsync(ct); }
-                catch (DbUpdateException) { /* richiesta ripetuta in parallelo: il blocco esiste già */ }
+                catch (DbUpdateException) { db.ChangeTracker.Clear(); /* richiesta ripetuta in parallelo: il blocco esiste già */ }
             }
+            // Bloccare qualcuno significa non voler correre con lui: si esce dalle uscite future che avete in comune.
+            await RunMembership.LeaveFutureRunsAsync(db, me, userId, time.GetUtcNow(), ct);
             return Results.NoContent();
         }).RequireAuthorization();
 
